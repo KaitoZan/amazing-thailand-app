@@ -1,0 +1,59 @@
+/* src/components/AppBar.css */
+.appbar {
+  width: 100%;
+  height: 60px;
+  background: rgba(142, 26, 153, 0.322);
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 30px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  font-family: 'Charmonman', cursive;
+  color: white;
+  box-sizing: border-box;
+}
+
+.appbar-left {
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.appbar-right {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  padding-right: 40px;
+}
+
+.search-input {
+  padding: 8px 25px;
+  border-radius: 20px;
+  border: none;
+  background: rgba(255, 255, 255, 0.3);
+  color: white;
+  font-size: 14px;
+  outline: none;
+}
+
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.appbarlogin-button {
+  padding: 4px 40px;
+  border: none;
+  border-radius: 20px;
+  background: linear-gradient(to right, #f27121, #e94057, #8a2387);
+  color: white;
+  cursor: pointer;
+  font-size: 20px;
+  transition: opacity 0.3s ease;
+}
+
+.appbarlogin-button:hover {
+  opacity: 0.9;
+}

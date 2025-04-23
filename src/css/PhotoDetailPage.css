@@ -1,0 +1,320 @@
+/* src/views/PhotoDetailPage.css */
+
+/* Style สำหรับ Container หลักของหน้านี้ */
+.photo-detail-page-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 120px auto 20px auto; /* <--- ค่า 80px ตรงนี้คือระยะห่างจากด้านบน */
+    background-color: #0e1431ce;
+    border-radius: 8px;
+    padding-bottom: 90px;
+    box-shadow: 0 2px 10px rgba(4, 0, 255, 0.986);
+  }
+  
+  /* Style สำหรับหัวข้อ (รายละเอียดรูปภาพ) ที่อยู่เต็มความกว้างด้านบน */
+  .photo-detail-page-container h1 {
+      text-align: center; /* จัดกึ่งกลาง */
+      margin-bottom: 20px;
+      color: #ffffff;
+      font-size: 1.7em;
+  }
+  .photo-detail-page-container h2 {
+    text-align: top; /* จัดกึ่งกลาง */
+    margin-bottom: 5px;
+    color: #ffffff;
+    font-size: 1.4em;
+}
+  
+  /* --- Style สำหรับ Container ที่แบ่งเป็น 2 คอลัมน์ --- */
+  .photo-and-comments-layout {
+    display: flex; /* ใช้ Flexbox */
+    gap: 30px; /* ระยะห่างระหว่างคอลัมน์ */
+    flex-wrap: wrap; /* อนุญาตให้คอลัมน์ขึ้นบรรทัดใหม่เมื่อหน้าจอแคบ */
+    /* อาจไม่ต้องใช้ margin-top ถ้า h1 มี margin-bottom แล้ว */
+  }
+  
+  /* --- Style สำหรับ คอลัมน์ซ้าย (รูปภาพและรายละเอียด) --- */
+  .photo-info-section {
+    flex: 1; /* ยืดหยุ่น ให้สามารถยืดหรือหดได้ */
+    min-width: 300px; /* ความกว้างต่ำสุดก่อนที่จะขึ้นบรรทัดใหม่ */
+    /* flex-basis: 60%; */ /* หรือกำหนดความกว้างเริ่มต้นเป็นเปอร์เซ็นต์ */
+  
+    /* Style เนื้อหาภายใน photo-info-section ถ้าต้องการ */
+    /* border-right: 1px solid #eee; */ /* อาจเพิ่มเส้นคั่นระหว่างคอลัมน์ */
+    /* padding-right: 15px; */ /* เพิ่ม padding ด้านขวาถ้ามีเส้นคั่น */
+  }
+  
+  /* --- Style สำหรับ คอลัมน์ขวา (ส่วน Comment ทั้งหมด) --- */
+  .comments-section-container {
+    flex: 1.5; /* ยืดหยุ่น ให้สามารถยืดหรือหดได้มากกว่าคอลัมน์ซ้าย */
+    min-width: 300px; /* ความกว้างต่ำสุดก่อนที่จะขึ้นบรรทัดใหม่ */
+    /* flex-basis: 40%; */ /* หรือกำหนดความกว้างเริ่มต้นเป็นเปอร์เซ็นต์ */
+  
+    display: flex; /* ใช้ Flexbox ภายใน Comments Container */
+    flex-direction: column; /* จัดเรียงเนื้อหาภายในเป็นคอลัมน์ (หัวข้อ Comment, List Comment, Add Form) */
+  
+    /* Style เนื้อหาภายใน comments-section-container ถ้าต้องการ */
+     /* padding-left: 15px; */ /* เพิ่ม padding ด้านซ้ายถ้ามีเส้นคั่นในคอลัมน์ซ้าย */
+  }
+  
+  /* Style เดิมสำหรับส่วนแสดง Comment (ซึ่งอยู่ภายใน comments-section-container) */
+  .comments-section {
+     /* margin-top: 0; */ /* อาจต้องปรับ Margin ด้านบนของส่วน Comment */
+  }
+  
+  
+  /* Style สำหรับรูปภาพหลัก */
+  .photo-detail-image {
+    max-width: 100%; /* ทำให้รูปภาพไม่เกินความกว้าง Container */
+    height: auto; /* รักษาอัตราส่วน */
+    display: block; /* ลบ space ด้านล่างรูป */
+    margin: 0 auto 20px auto; /* จัดกึ่งกลางและมีระยะห่างด้านล่าง */
+    border-radius: 8px; /* มุมโค้งมน */
+  }
+  
+  /* Style สำหรับหัวข้อ (ชื่อสถานที่) */
+  .photo-detail-location {
+    font-size: 1.8em; /* ขนาด Font ชื่อสถานที่ */
+    margin-bottom: 30px;
+    color: #ffffff; /* สีข้อความ */
+  }
+  
+  /* Style สำหรับชื่อผู้โพสต์ */
+  .photo-detail-user {
+      font-size: 0.9em;
+      color: #ffffff;
+      margin-bottom: 10px;
+  }
+  
+  /* Style สำหรับรายละเอียด (Description) */
+  .photo-detail-description {
+      font-size: 1em;
+      line-height: 1.6;
+      color: #ffffff;
+      margin-bottom: 70px;
+  }
+  
+  /* Style สำหรับเส้นคั่น */
+  .photo-detail-divider {
+      margin: 20px 0;
+      border: 0;
+      border-top: 1px solid #eee;
+  }
+  
+  
+  /* --- Style สำหรับส่วนแสดง Comment ทั้งหมด --- */
+  /* comments-section เป็น container ที่อยู่ภายใน comments-section-container */
+  .comments-section h3 {
+      font-size: 1.5em;
+      margin-bottom: 15px;
+      color: #fcfcfc;
+  }
+  
+  .comments-list {
+      list-style: none; /* ลบ Bullet Point ของ ul */
+      padding: 0; /* ลบ Padding ซ้ายของ ul */
+      max-height: 300px; /* <--- กำหนดความสูงสูงสุดที่ต้องการ (ปรับค่าได้) */
+      overflow-y: auto; /* <--- เพิ่ม Scrollbar แนวตั้งอัตโนมัติเมื่อเนื้อหาเกิน */
+  }
+  
+  .comment-item {
+      border: 1px solid #fdfdfd; /* เส้นขอบ Comment แต่ละอัน */
+      border-radius: 5px; /* มุมโค้งมน */
+      padding: 10px; /* ระยะห่างภายในกล่อง Comment */
+      margin-bottom: 15px; /* ระยะห่างระหว่าง Comment */
+      background-color: #f9f9f9; /* สีพื้นหลัง Comment */
+      box-shadow: 0 1px 3px rgba(10, 226, 255, 0.637); /* เงาเล็กน้อย */
+  }
+  
+  .comment-author {
+      font-weight: bold; /* ตัวหนาชื่อผู้ Comment */
+      color: #007bff; /* สีชื่อผู้ Comment (ปรับตามต้องการ) */
+      margin-right: 5px;
+  }
+  
+  .comment-text {
+      /* margin ถูกจัดการใน div หรือ span ที่ครอบแล้ว */
+      /* margin: 5px 0; */ /* ระยะห่างบน/ล่าง ข้อความ Comment */
+      color: #333;
+      display: inline-block; /* ทำให้ span เป็น inline block เพื่อควบคุม margin/padding ได้ */
+  }
+  
+  .comment-meta {
+      font-size: 0.85em; /* ขนาด Font วันที่/เวลา */
+      color: #888; /* สีข้อความวันที่/เวลา */
+      margin-top: 5px;
+  }
+  
+  /* Style สำหรับปุ่ม แก้ไข/ลบ Comment */
+  .comment-actions {
+      margin-top: 5px; /* ระยะห่างด้านบนกลุ่มปุ่ม */
+      font-size: 0.9em;
+      white-space: nowrap; /* ป้องกันปุ่มขึ้นบรรทัดใหม่ */
+  }
+  
+  .comment-actions button {
+      background-color: #007bff; /* สีปุ่ม แก้ไข */
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 3px 8px;
+      cursor: pointer;
+      margin-right: 5px; /* ระยะห่างด้านขวาปุ่ม */
+      transition: background-color 0.3s ease;
+  }
+  
+  .comment-actions button:hover {
+      background-color: #0056b3;
+  }
+  
+  .comment-actions button:last-child {
+      background-color: #dc3545; /* สีปุ่ม ลบ */
+      margin-right: 0; /* ลบ margin ด้านขวาของปุ่มสุดท้าย */
+  }
+  .comment-actions button:last-child:hover {
+      background-color: #c82333;
+  }
+  
+  .comment-actions button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+  }
+  
+  /* Style สำหรับ Form แก้ไข Comment */
+  .edit-comment-form textarea {
+      width: calc(100% - 16px); /* ทำให้ textarea เต็มความกว้าง (ลบ padding 2 ด้าน) */
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+  }
+  .edit-comment-form button {
+       background-color: #5cb85c; /* สีปุ่ม บันทึก */
+       color: rgb(255, 0, 0);
+       border: none;
+       border-radius: 4px;
+       padding: 5px 10px;
+       cursor: pointer;
+       margin-right: 5px;
+       transition: background-color 0.3s ease;
+  }
+  .edit-comment-form button:hover {
+      background-color: #4cae4c;
+  }
+  .edit-comment-form button:last-child {
+       background-color: #f0ad4e; /* สีปุ่ม ยกเลิก */
+       margin-right: 0;
+  }
+  .edit-comment-form button:last-child:hover {
+      background-color: #ec971f;
+  }
+  .edit-comment-form button:disabled {
+       background-color: #cccccc;
+       cursor: not-allowed;
+  }
+  
+  
+  /* Style สำหรับส่วน Form เพิ่ม Comment */
+  .add-comment-form {
+      /* margin-top ถูกกำหนดใน inline style แล้ว */
+      display: fixed;
+  }
+  .add-comment-form h4 {
+      margin-bottom: 15px;
+      color: #ffffff;
+  }
+  .add-comment-form textarea {
+      width: calc(100% - 20px); /* ทำให้ textarea เต็มความกว้าง (ลบ padding 2 ด้าน) */
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+      display: block; /* ทำให้ textarea เป็น block element */
+      resize: none;
+      color: black;
+      background-color: #ffffff;
+  }
+  .add-comment-form button[type="submit"] {
+      background-color: #007bff; /* สีปุ่ม Submit */
+      color: rgb(0, 0, 0);
+      border: none;
+      border-radius: 4px;
+      margin-top: 10px;
+      margin-left: 160px;
+      padding: 8px 105px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+  }
+  .add-comment-form button[type="submit"]:hover {
+      background-color: #0056b3;
+  }
+  .add-comment-form button[type="submit"]:disabled {
+      background-color: #8082ff;
+      cursor: not-allowed;
+  }
+  
+  /* Style สำหรับข้อความแจ้งเตือน Error/Success ในหน้านี้ */
+  .photo-detail-message {
+      margin-bottom: 15px;
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 0.9em;
+      text-align: center;
+  }
+  .photo-detail-message.error {
+      color: #721c24;
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+  }
+  .photo-detail-message.success {
+       color: #155724;
+       background-color: #d4edda;
+       border: 1px solid #c3e6cb;
+  }
+  
+  
+  /* Media query สำหรับหน้าจอขนาดเล็ก (Stack columns) */
+  @media (max-width: 768px) { /* ปรับ breakpoint ตามต้องการ */
+    .photo-and-comments-layout {
+      flex-direction: column; /* จัดเรียงเป็นคอลัมน์เดียว */
+      gap: 20px; /* ปรับระยะห่าง */
+    }
+  
+    .photo-info-section,
+    .comments-section-container {
+      flex-basis: auto; /* ไม่ใช้ flex-basis เมื่อเป็นคอลัมน์เดียว */
+      min-width: 100%; /* ให้เต็มความกว้าง */
+      /* ลบ padding หรือ border ที่ใช้คั่นคอลัมน์ออก ถ้ามี */
+       /* border-right: none; */
+       /* padding-right: 0; */
+       /* padding-left: 0; */
+    }
+  
+    .photo-detail-image {
+        /* อาจปรับ margin รูปภาพเมื่อเป็นคอลัมน์เดียว ถ้าต้องการ */
+    }
+    /* ใน PhotoDetailPage.css */
+/* ใน PhotoDetailPage.css */
+.back-button-container {
+    margin-top: 70px; /* ปรับค่าตามความสูง AppBar */
+    margin-bottom: 15px;
+    padding-left: 15px; /* ควรเท่ากับ padding ของ body */
+    padding-right: 15px; /* ควรเท่ากับ padding ของ body */
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Style สำหรับปุ่มย้อนกลับเอง (ถ้ามี) */
+.back-button {
+    /* Style ปุ่ม เช่น สี, ขนาด, border-radius */
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+}

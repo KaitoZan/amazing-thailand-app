@@ -1,0 +1,136 @@
+/* src/index.css - แก้ไข */
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  /* เก็บ color-scheme ไว้ */
+  color-scheme: light dark;
+
+  /* ย้าย background-color และ background-image ไปที่ body */
+  /* color: rgba(255, 255, 255, 0.87); */ /* สีข้อความ Default อาจปรับหรือลบออก */
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0; /* ลบ margin เริ่มต้น */
+  /* ลบ display: flex; place-items: center; ออก เพื่อให้เนื้อหา Flow ปกติ */
+  /* display: flex; */
+  /* place-items: center; */
+
+  min-width: 320px; /* กำหนดความกว้างต่ำสุด */
+  min-height: 100vh; /* กำหนดความสูงต่ำสุด */
+
+  /* เพิ่ม Padding ด้านซ้ายและขวา เพื่อไม่ให้เนื้อหาติดขอบจอ */
+  padding: 0 15px; /* ปรับค่า 15px ได้ตามต้องการ */
+
+  /* ย้าย Background Color และ Image มาจาก :root */
+  background-color: #a473ff4b; /* ใช้สีตามที่คุณกำหนด */
+  background-image: url("../public/bg.jpg");
+  background-size: cover;
+  background-repeat: no-repeat; /* เพิ่ม repeat */
+  background-position: center center; /* เพิ่ม position */
+  background-attachment: fixed; /* ถ้าต้องการให้ Background ติดอยู่กับ Viewport เวลา Scroll */
+
+  /* กำหนดสีข้อความ Default ถ้าไม่ได้กำหนดที่อื่น */
+  color: #213547; /* ตัวอย่างสีข้อความสำหรับ Light Mode */
+  /* หรือ color: #e0e0e0; สำหรับ Dark Mode แล้วจัดการใน prefers-color-scheme */
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+  /* อาจจะต้องปรับ margin-top หรือ padding-top ใน Component ที่ใช้ h1 แรกสุด */
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  /* background-color และ color จะจัดการใน prefers-color-scheme หรือใน Component */
+  background-color: #1a1a1a; /* สีปุ่ม Default */
+  color: rgba(255, 255, 255, 0.87); /* สีข้อความปุ่ม Default */
+  cursor: pointer;
+  transition: border-color 0.25s, background-color 0.25s, color 0.25s; /* เพิ่ม transition */
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+/* ตรวจสอบและปรับแก้ Box Sizing Rule ถ้ายังไม่มี */
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+
+/* Media query สำหรับ Light Mode */
+@media (prefers-color-scheme: light) {
+  :root {
+    /* light mode vars ถ้ามี */
+  }
+
+  /* กำหนด Style สำหรับ Light Mode ที่ Body */
+  body {
+     background-color: #ffffff;
+     background-image: none; /* ถ้าไม่ต้องการ Background Image ใน Light Mode */
+     color: #213547; /* สีข้อความสำหรับ Light Mode */
+  }
+
+  a:hover {
+    color: #747bff;
+  }
+
+  button {
+    background-color: #f9f9f9;
+    color: #213547;
+    border-color: #ccc; /* อาจเพิ่ม border ใน Light Mode */
+  }
+  button:hover {
+      border-color: #747bff;
+  }
+}
+
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #1a1a1a;
+        color: rgba(255, 255, 255, 0.87);
+         background-image: url("../public/bg.jpg"); 
+         background-size: cover;
+         background-repeat: no-repeat;
+         background-position: center center;
+         background-attachment: fixed;
+    }
+    button {
+        background-color: #1a1a1a;
+        color: rgba(255, 255, 255, 0.87);
+         border-color: #333;
+    }
+    button:hover {
+        border-color: #646cff;
+    }
+}
