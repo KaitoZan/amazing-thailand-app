@@ -1,0 +1,158 @@
+/* src/css/EditProfile.css */
+
+/* ส่วน Style Global ที่ควรย้ายไป Global.css หรือ App.css */
+/*
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow-x: hidden;
+  }
+  a {
+    font-family: 'Charmonman', cursive;
+  }
+*/
+
+/* พื้นหลังเต็มจอ (ใช้ Style เดียวกับ Login/Register/AddPost) */
+.full-screen-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+        background:
+            linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+            url('../assets/bg.jpg') no-repeat center center;
+    background-size: cover;
+    display: flex;
+    align-items: center; /* จัดกลางแนวตั้ง */
+    justify-content: center; /* จัดกลางแนวนอน */
+    padding: 0 5vw;
+    }
+    
+    /* กล่องสำหรับ Form แก้ไข Profile (ใช้ Style คล้ายกล่องอื่นๆ) */
+    .edit-profile-box { /* ใช้ชื่อ Class เฉพาะสำหรับหน้านี้ */
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(12px);
+        border-radius: 20px;
+        padding: 40px;
+        width: 500px; /* ปรับความกว้างตามต้องการ */
+        max-width: 90%;
+        height: auto; /* ให้ความสูงปรับตามเนื้อหา */
+        margin-top: 20px; /* อาจมี margin บน/ล่าง ถ้าจำเป็น */
+        margin-bottom: 20px;
+    
+    
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: #fff; /* สีตัวอักษรภายในกล่อง */
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* Style สำหรับหัวข้อในกล่อง */
+    .edit-profile-title { /* ใช้ชื่อ Class เฉพาะสำหรับหน้านี้ */
+        font-family: 'Charmonman', cursive; /* ใช้ Font เดียวกัน */
+        font-size: 36px; /* อาจปรับขนาดให้เหมาะสม */
+        margin-bottom: 20px;
+        color: #fff;
+        text-align: center;
+    }
+    
+    /* Style สำหรับ Input Element (ใช้ Class input-field เดียวกัน) */
+    .input-field {
+        width: 100%;
+        height: 60px;
+        margin: 10px 0;
+        padding: 14px;
+        border: none;
+        border-radius: 10px;
+        background: rgba(105, 71, 71, 0.2);
+        color: #fff;
+        font-size: 16px;
+        box-sizing: border-box;
+    }
+    
+    .input-field::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    /* Style สำหรับกลุ่ม Input File และรูป Profile */
+    .profile-picture-group {
+        width: 100%;
+        margin: 15px 0;
+        text-align: center; /* จัดกลางเนื้อหาใน Group */
+    }
+    
+    .current-profile-picture {
+        display: block; /* ทำให้รูปภาพขึ้นบรรทัดใหม่ */
+        max-width: 120px; /* ขนาดรูป Profile ปัจจุบัน */
+        max-height: 120px;
+        border-radius: 50%; /* ทำเป็นวงกลม */
+        margin: 10px auto 15px auto; /* จัดกลางรูปและมี margin รอบๆ */
+        border: 2px solid rgba(255, 255, 255, 0.5); /* ขอบรูป */
+        object-fit: cover; /* ครอบคลุมพื้นที่โดยไม่ผิดสัดส่วน */
+    }
+    
+    /* Style สำหรับ Label ของ Input File */
+    .profile-picture-group label {
+        display: block; /* ทำให้ Label ขึ้นบรรทัดใหม่ */
+        margin-bottom: 8px;
+        font-size: 16px;
+        color: #fff;
+    }
+    
+    /* Style สำหรับ Input File ตัวจริง (ซ่อนไว้ แล้วใช้ Label สไตล์ custom แทน) */
+    .profile-picture-group input[type="file"] {
+        /* ซ่อน Input File ตัวจริง */
+        display: none;
+    }
+    
+    /* Style สำหรับ Label ที่ทำหน้าที่เป็นปุ่ม "เลือกไฟล์" (ถ้าต้องการ Custom Style) */
+    .custom-file-upload-button {
+        display: inline-block; /* ทำให้เป็นปุ่ม */
+        background-color: rgba(105, 71, 71, 0.4); /* สีพื้นหลัง */
+        color: white; /* สีตัวอักษร */
+        padding: 8px 15px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        font-size: 14px;
+    }
+    
+    .custom-file-upload-button:hover {
+        background-color: rgba(105, 71, 71, 0.6);
+    }
+    
+    /* Style สำหรับชื่อไฟล์ที่เลือก */
+    .selected-file-name {
+        font-size: 12px;
+        margin-top: 5px;
+        color: rgba(255, 255, 255, 0.8);
+    }
+    
+    
+    /* Style สำหรับปุ่ม Submit (ใช้ Style คล้ายปุ่มอื่นๆ) */
+    .save-profile-button { /* ใช้ชื่อ Class เฉพาะสำหรับหน้านี้ */
+        margin-top: 20px;
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(45deg, hsla(0, 100%, 56%, 0.557), #e2b75a83, #8163d383);
+        border: none;
+        border-radius: 12px;
+        color: #fff;
+        font-size: 20px !important;
+        cursor: pointer;
+        font-family: 'Charmonman', cursive;
+        transition: opacity 0.3s ease;
+    }
+    
+    .save-profile-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .save-profile-button:hover:not(:disabled) {
+        opacity: 0.9;
+    }

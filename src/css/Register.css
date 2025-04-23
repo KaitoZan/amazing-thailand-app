@@ -1,0 +1,172 @@
+/* src/css/Register.css */
+
+.full-screen-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background:
+        linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+        url('../assets/bg.jpg') no-repeat center center;
+    background-size: cover;
+    display: flex;
+    align-items: center;
+    padding: 0 5vw;
+    justify-content: center;
+}
+
+.app-title {
+    position: absolute;
+    top: 65px;
+    left: 15%;
+    transform: translateX(-50%);
+    color: hsl(0, 0%, 100%);
+    font-family: 'Charmonman', cursive;
+    font-size: 60px;
+    z-index: 1;
+}
+
+.app-title2 {
+    position: absolute;
+    top: 130px;
+    left: 20%;
+    transform: translateX(-50%);
+    color: white;
+    font-family: 'Charmonman', cursive;
+    font-size: 60px;
+    z-index: 1;
+}
+
+.my-fw-image {
+    position: fixed;
+    top: 100px;
+    left: 600px;
+    width: 25%;
+    z-index: 1;
+}
+
+.my-fw-image2 {
+    position: fixed;
+    top: 400px;
+    left: 250px;
+    width: 15%;
+    z-index: 1;
+}
+.my-fw-image3 {
+    position: fixed;
+    top: 400px;
+    left: 1500px;
+    width: 15%;
+    z-index: 1;
+}
+
+.register-box {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    border-radius: 20px;
+    padding: 40px;
+    width: 500px;
+    max-width: 90%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #fff;
+    position: relative;
+    z-index: 1;
+}
+
+.back-button.top-left-button {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background-color: rgba(105, 71, 71, 0.2);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-size: 14px;
+    z-index: 2;
+}
+
+.back-button.top-left-button:hover {
+    background-color: rgba(105, 71, 71, 0.5);
+}
+
+.register-title {
+    font-family: 'Charmonman', cursive;
+    font-size: 40px;
+    margin-bottom: 20px;
+    color: #fff;
+}
+
+.input-field {
+    width: 100%;
+    height: 60px;
+    margin: 10px 0;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background: rgba(105, 71, 71, 0.2);
+    color: #fff;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.input-field::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.links {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    font-size: 19px;
+    margin: 10px 0;
+    margin-top: 20px;
+}
+
+.links a {
+    color: #fff;
+    text-decoration: none;
+    font-family: 'Charmonman', cursive;
+}
+
+.links a:hover {
+    text-decoration: underline;
+}
+
+.register-button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(45deg, hsla(0, 100%, 56%, 0.557), #e2b75a83, #8163d383);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 20px !important;
+    cursor: pointer;
+    font-family: 'Charmonman', cursive;
+    transition: opacity 0.3s ease;
+}
+
+.register-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.register-button:hover:not(:disabled) {
+    opacity: 0.9;
+}
+
+.image-preview {
+    display: block; /* ทำให้รูปภาพขึ้นบรรทัดใหม่ */
+    max-width: 100%; /* ความกว้างสูงสุดไม่เกินกล่อง Form */
+    height: auto; /* รักษาอัตราส่วน */
+    margin-top: 10px; /* ระยะห่างด้านบน */
+    border-radius: 8px; /* ขอบมนเล็กน้อย */
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.3); /* เพิ่มเงาเล็กน้อย */
+}

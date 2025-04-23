@@ -1,315 +1,352 @@
-// src/views/EditProfile.jsx
+// src/views/EditProfile.jsx (Updated for Styling)
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom'; // นำเข้า useParams
+import { useParams, useNavigate, Link } from 'react-router-dom'; // เพิ่ม Link และนำเข้า useParams
 import axios from 'axios';
-import { useAuth } from '../contexts/AuthContext'; // นำเข้า useAuth Hook
-// อาจจะสร้างไฟล์ EditProfile.css สำหรับ Style หน้า Edit Profile
-// import './EditProfile.css';
+import { useAuth } from '../contexts/AuthContext';
+// --- นำเข้าไฟล์ CSS ที่สร้างใหม่ ---
+import '../css/EditProfile.css';
+// -------------------------------
 
 const BASE_BACKEND_URL = 'https://amazing-thailand-server.vercel.app'; // <-- ใช้ URL จริงของคุณ
 
 function EditProfile() {
-  // --- ใช้ useAuth Hook เพื่อตรวจสอบสิทธิ์และดึงข้อมูลผู้ใช้ที่ Login อยู่ ---
-  const { currentUser, isLoggedIn, isLoading: isAuthLoading, login: updateAuthUser } = useAuth(); // เพิ่ม updateAuthUser
-  // --------------------------------------------------------------------
+  // --- ใช้ useAuth Hook เพื่อตรวจสอบสิทธิ์และดึงข้อมูลผู้ใช้ที่ Login อยู่ ---
+  const { currentUser, isLoggedIn, isLoading: isAuthLoading, login: updateAuthUser } = useAuth();
+  // --------------------------------------------------------------------
 
-  const { userId } = useParams(); // ดึง userId จาก URL Parameter
-  const navigate = useNavigate();
+  const { userId } = useParams();
+  const navigate = useNavigate();
 
-  // --- State สำหรับเก็บค่าใน Form และข้อมูล Profile เดิม ---
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState(''); // สำหรับเปลี่ยน Password ใหม่
-  const [profilePictureFile, setProfilePictureFile] = useState(null); // ไฟล์รูป Profile ใหม่
-  const [currentProfilePictureUrl, setCurrentProfilePictureUrl] = useState(''); // URL รูป Profile ปัจจุบัน
-  // ------------------------------------------------------
-
-  // State สำหรับจัดการสถานะและข้อผิดพลาด/สำเร็จ
-  const [loading, setLoading] = useState(true); // ตั้งต้นเป็น true เพราะต้องโหลดข้อมูลเก่าก่อน
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false); // สถานะกำลังส่งข้อมูล Form
-
-  // --- Effect สำหรับดึงข้อมูล Profile เก่าและตรวจสอบสิทธิ์ ---
-  useEffect(() => {
-    console.log("useEffect in EditProfile running..."); // Log เมื่อ Effect ทำงาน
-    console.log("isAuthLoading:", isAuthLoading);
-    console.log("isLoggedIn:", isLoggedIn);
-    console.log("currentUser:", currentUser);
-    console.log("userId from URL:", userId);
-    console.log("Parsed userId:", parseInt(userId));
-    console.log("Are IDs matching?", currentUser && currentUser.user_id === parseInt(userId));
+  // --- State สำหรับเก็บค่าใน Form และข้อมูล Profile เดิม ---
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState(''); // สำหรับเปลี่ยน Password ใหม่
+  const [profilePictureFile, setProfilePictureFile] = useState(null); // ไฟล์รูป Profile ใหม่
+  const [currentProfilePictureUrl, setCurrentProfilePictureUrl] = useState(''); // URL รูป Profile ปัจจุบัน
+  // --- เพิ่ม State สำหรับแสดง Preview รูปใหม่ ---
+  const [newProfilePicturePreviewUrl, setNewProfilePicturePreviewUrl] = useState(null);
+  // ------------------------------------------------------
 
 
-    const fetchProfileData = async () => {
-      console.log("Attempting to fetch profile data..."); // Log ก่อน fetch
-      // ... fetch logic ...
-      try {
-        setLoading(true); // เริ่มโหลดข้อมูล Profile
-        setError(null);
-
-        // *** สมมติว่า Backend มี Endpoint GET /api/users/:userId สำหรับดึงข้อมูลผู้ใช้ ***
-        // (ถ้า Backend คุณยังไม่มี ต้องเพิ่ม Endpoint นี้ใน user.route และ controller ครับ)
-        const response = await axios.get(`${BASE_BACKEND_URL}/api/users/${userId}`);
-        const userData = response.data.data;
-        console.log("Fetch successful, user data:", userData); // Log เมื่อ fetch สำเร็จ
-
-        // **ตรวจสอบสิทธิ์: ผู้ใช้ที่ Login ต้องเป็นเจ้าของ Profile ที่ดึงมา**
-        if (currentUser.user_id !== userData.user_id) { // <--- แก้ไขตรงนี้
-            console.log("User ID from currentUser does not match fetched user ID."); // Log ถ้า ID ไม่ตรง
-            alert('คุณไม่มีสิทธิ์แก้ไข Profile นี้'); // แจ้งเตือนว่าไม่ใช่เจ้าของ
-            navigate('/'); // Redirect ออกไปหน้าหลัก
-            return; // หยุดการทำงานต่อ
-        }
-
-        // ถ้าเป็นเจ้าของ ให้กำหนดค่าเก่าลงใน State ของ Form
-        setUsername(userData.username);
-        setEmail(userData.email);
-        // ไม่ต้องกำหนด Password เก่าลงใน State
-        setCurrentProfilePictureUrl(userData.profile_picture_url); // เก็บ URL รูปภาพเก่า
-
-      } catch (err) {
-        console.error("Failed to fetch user data:", err); // Log เมื่อ fetch ล้มเหลว
-        setError(err);
-        const errorMessage = err.response?.data?.message || 'เกิดข้อผิดพลาดในการดึงข้อมูล Profile';
-        // alert(`Error: ${errorMessage}`); // ปิด alert ซ้ำซ้อน ถ้า Error Message ถูกแสดงที่อื่นแล้ว
-         if (err.response && err.response.status === 404) {
-             console.log("User not found (404). Redirecting.");
-             navigate('/'); // Redirect ไปหน้าหลักถ้าไม่พบ User
-         } else if (err.response && (err.response.status === 401 || err.response.status === 403)) {
-              console.log("Authorization error (401/403). Redirecting to login.");
-             navigate('/login'); // Redirect ไปหน้า Login ถ้าไม่มีสิทธิ์
-         } else {
-             // จัดการ Error อื่นๆ
-              alert(`Error: ${errorMessage}`); // แสดง Alert สำหรับ Error อื่นๆ
-              navigate('/'); // Redirect ไปหน้าหลักสำหรับ Error อื่นๆ
-         }
-
-      } finally {
-        setLoading(false); // โหลดข้อมูล Profile เสร็จสิ้น
-        console.log("Fetch process finished."); // Log เมื่อ fetch process เสร็จ
-      }
-    };
+  // State สำหรับจัดการสถานะและข้อผิดพลาด/สำเร็จ
+  const [loading, setLoading] = useState(true); // ตั้งต้นเป็น true เพราะต้องโหลดข้อมูลเก่าก่อน
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
 
-    // รอตรวจสอบ Auth เสร็จก่อน
-    if (isAuthLoading) {
-        console.log("Auth is still loading, returning.");
-        return; // ไม่ทำอะไรถ้า Auth ยังโหลดอยู่
-    }
-
-    // ตรวจสอบว่า userId จาก URL เป็นตัวเลขที่ถูกต้องหรือไม่
-    const parsedUserId = parseInt(userId);
-    if (isNaN(parsedUserId)) {
-       console.log("Invalid userId in URL (not a number). Redirecting."); // Log ถ้า userId ใน URL ไม่ถูกต้อง
-       navigate('/'); // Redirect ถ้า userId ไม่ถูกต้อง
-       return;
-    }
-
-    // ถ้าไม่ได้ Login หรือ ID ใน URL ไม่ตรงกับผู้ใช้ที่ Login ให้ Redirect
-    // ตรวจสอบ currentUser?.user_id เพื่อป้องกัน Error ถ้า currentUser เป็น null/undefined
-    if (!isLoggedIn || !currentUser || currentUser.user_id !== parsedUserId) {
-        console.log("Auth check failed or IDs do not match. Redirecting.");
-        alert('คุณไม่มีสิทธิ์แก้ไข Profile นี้'); // แจ้งเตือนผู้ใช้
-        // Redirect ไปหน้าหลัก ถ้า Login อยู่ แต่ ID ไม่ตรง หรือ Redirect ไป Login ถ้าไม่ได้ Login
-        navigate(isLoggedIn ? '/' : '/login');
-        return; // หยุดการทำงานต่อ
-    }
-
-    // ถ้าทุกอย่างถูกต้อง และ userId ใน URL เป็นตัวเลขที่ถูกต้อง และตรงกับผู้ใช้ที่ Login
-    console.log("Conditions met. Calling fetchProfileData()."); // Log ก่อนเรียก fetch function
-    fetchProfileData(); // เรียก function fetch API
+  // --- Effect สำหรับดึงข้อมูล Profile เก่าและตรวจสอบสิทธิ์ ---
+  useEffect(() => {
+    console.log("useEffect in EditProfile running...");
+    console.log("isAuthLoading:", isAuthLoading);
+    console.log("isLoggedIn:", isLoggedIn);
+    console.log("currentUser:", currentUser);
+    console.log("userId from URL:", userId);
 
 
-  }, [userId, isLoggedIn, currentUser, isAuthLoading, navigate, updateAuthUser]); // Dependencies Array
+    const fetchProfileData = async (idToFetch) => { // รับ user id ที่ต้องการ fetch เป็น Parameter
+      console.log("Attempting to fetch profile data for user ID:", idToFetch);
+      try {
+        setLoading(true);
+        setError(null);
+
+        // *** เรียก API ดึงข้อมูลผู้ใช้ตาม ID จาก URL ***
+        const response = await axios.get(`${BASE_BACKEND_URL}/api/users/${idToFetch}`); // ใช้ idToFetch
+        const userData = response.data.data;
+        console.log("Fetch successful, user data:", userData);
+
+        // **ตรวจสอบสิทธิ์: ผู้ใช้ที่ Login ต้องเป็นเจ้าของ Profile ที่ดึงมา**
+        // การตรวจสอบนี้ควรทำหลังจากโหลด Auth และ fetch data แล้ว
+        // แต่เรามี Logic Redirect ด้านล่างที่จัดการการตรวจสอบสิทธิ์เบื้องต้นแล้ว
+        // ตรงนี้แค่กำหนดค่าเดิมลงใน State
+
+        setUsername(userData.username || ''); // กำหนดค่าเดิม (ใช้ || '' เพื่อป้องกัน undefined)
+        setEmail(userData.email || '');
+        setCurrentProfilePictureUrl(userData.profile_picture_url || '');
+
+      } catch (err) {
+        console.error("Failed to fetch user data:", err);
+        setError(err);
+        const errorMessage = err.response?.data?.message || 'เกิดข้อผิดพลาดในการดึงข้อมูล Profile';
+
+        // จัดการ Redirect ตาม Error Status
+        if (err.response && err.response.status === 404) {
+            console.log("User not found (404). Redirecting.");
+            navigate('/'); // Redirect ไปหน้าหลักถ้าไม่พบ User
+        } else if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+            console.log("Authorization error (401/403). Redirecting to login.");
+            navigate('/login'); // Redirect ไปหน้า Login ถ้าไม่มีสิทธิ์
+        } else {
+            // จัดการ Error อื่นๆ
+            alert(`Error: ${errorMessage}`); // แสดง Alert สำหรับ Error อื่นๆ
+            navigate('/'); // Redirect ไปหน้าหลักสำหรับ Error อื่นๆ
+        }
+
+      } finally {
+        setLoading(false);
+        console.log("Fetch process finished.");
+      }
+    };
 
 
-  // ถ้ายังโหลด Auth หรือข้อมูล Profile อยู่ ให้แสดง Loading
-  if (isAuthLoading || loading) {
-      return <div>กำลังโหลดข้อมูล Profile...</div>; // แสดง Loading ถ้า Auth หรือ Data โหลดอยู่
-  }
+    // Logic ตรวจสอบสิทธิ์และ Redirect
+    if (!isAuthLoading) { // รอจนกว่า Auth จะโหลดเสร็จ
+        const parsedUserId = parseInt(userId);
 
-   // หากมาถึงตรงนี้ แสดงว่าโหลดเสร็จ, Login แล้ว, และ user id ตรงกับ URL
-   // ส่วนใหญ่ Logic Redirect จะจัดการไปแล้ว แต่มี Return นี้เผื่อไว้
-   // สามารถ Return JSX ของ Form ได้เลย ถ้าแน่ใจว่า Code มาถึงตรงนี้ได้จากการผ่านเงื่อนไขทั้งหมด
+        if (isNaN(parsedUserId)) {
+            console.log("Invalid userId in URL (not a number). Redirecting.");
+            navigate('/');
+            return; // หยุด Effect
+        }
 
-  // --- ฟังก์ชันจัดการเมื่อเลือกไฟล์รูป Profile ใหม่ ---
-  const handleFileChange = (event) => {
-    setProfilePictureFile(event.target.files[0]); // เก็บไฟล์ใหม่ที่เลือก
-    // อาจจะแสดง Preview รูปใหม่ที่นี่ด้วย
-  };
+        // ตรวจสอบว่า Login แล้ว และ userId ใน URL ตรงกับผู้ใช้ที่ Login
+        // ใช้ optional chaining ?. และ double equals == เพื่อเปรียบเทียบ string/number ได้ยืดหยุ่นขึ้น
+        if (!isLoggedIn || currentUser?.user_id != parsedUserId) {
+            console.log("Auth check failed or IDs do not match. Redirecting.");
+            alert('คุณไม่มีสิทธิ์แก้ไข Profile นี้');
+            navigate(isLoggedIn ? '/' : '/login'); // Redirect ไปหน้าหลัก หรือหน้า Login
+            return; // หยุด Effect
+        }
 
-  // --- ฟังก์ชันจัดการเมื่อ Form ถูก Submit ---
-  const handleSubmit = async (event) => {
-    event.preventDefault(); // ป้องกันการ Refresh หน้าเว็บ
+        // ถ้าผ่านการตรวจสอบทั้งหมด ให้เริ่มดึงข้อมูล Profile
+        console.log("Auth check passed. Fetching profile data.");
+        fetchProfileData(parsedUserId); // เรียก fetch function ด้วย parsed userId
 
-    setError(null); // Clear error ก่อนลอง Submit ใหม่
-    setSuccess(false); // Clear success message
-    setIsSubmitting(true); // ตั้งสถานะกำลังส่ง Form
-
-    try {
-      // Backend API users (PUT) ต้องการ multipart/form-data ถ้ามีการส่งไฟล์รูปใหม่
-      // Backend Controller editUser รับ username, email, password, profilePicture จาก Body
-      const formData = new FormData();
-      let isDataChanged = false; // Flag เพื่อตรวจสอบว่ามีการแก้ไขข้อมูลหรือไม่
-
-      // เช็คว่าผู้ใช้แก้ไข Field ไหนบ้าง แล้วค่อย append เฉพาะ Field นั้นๆ
-      // เปรียบเทียบกับค่าเดิมที่อยู่ใน State (ซึ่งโหลดมาจาก Profile เดิม)
-      // ต้องแน่ใจว่าค่าเดิมใน State ถูกโหลดมาถูกต้องแล้ว
-      // เปรียบเทียบ username
-      if (username !== (currentUser?.username || '')) { // เทียบกับ currentUser หรือ ค่าว่าง
-         formData.append('username', username);
-         isDataChanged = true;
-      }
-      // เปรียบเทียบ email
-      if (email !== (currentUser?.email || '')) { // เทียบกับ currentUser หรือ ค่าว่าง
-         formData.append('email', email);
-         isDataChanged = true;
-      }
-      // ส่ง password ใหม่ก็ต่อเมื่อผู้ใช้กรอก password ในฟอร์มเท่านั้น
-      if (password) {
-         formData.append('password', password);
-         isDataChanged = true;
-      }
-      // เพิ่มไฟล์รูปภาพใหม่ ถ้าผู้ใช้เลือกไฟล์ใหม่
-      if (profilePictureFile) {
-        formData.append('profilePicture', profilePictureFile); // ชื่อ field 'profilePicture' ต้องตรงกับที่ Backend ใช้ Multer
-        isDataChanged = true;
-      }
-
-      // ถ้าไม่มีการเปลี่ยนแปลงข้อมูลอะไรเลย ไม่ต้องเรียก API
-      if (!isDataChanged) {
-           console.log("No data changed, skipping API call.");
-           setSuccess(true); // ถือว่าสำเร็จ (ไม่ต้องบันทึกอะไร)
-           setIsSubmitting(false);
-           // อาจจะหน่วงเวลาแล้ว Redirect เลย
-            setTimeout(() => {
-               navigate(`/editprofile/${currentUser.user_id}`); // Redirect กลับหน้าเดิม หรือหน้าหลัก
-            }, 1000);
-           return;
-      }
+    } // else: if isAuthLoading is true, Effect does nothing until it's false
 
 
-      // **สำคัญ:** Backend PUT /api/users/:userId ต้องมีการตรวจสอบสิทธิ์ว่าผู้ที่เรียก API เป็นเจ้าของ userId ใน Path Parameter!
-      // เราส่ง Request ไปที่ userId ใน Path Parameter
-      const response = await axios.put(`${BASE_BACKEND_URL}/api/users/${userId}`, formData, {
-        // กำหนด Header ถ้ามีการส่งไฟล์ (Backend ที่รับ multipart/form-data ตลอด ก็ระบุ header นี้)
-        headers: {
-          'Content-Type': 'multipart/form-data', // อาจปรับเป็น application/json ถ้าแก้ไขแค่ข้อความและ Backend รองรับ
-        },
-      });
-
-      // ถ้าแก้ไขสำเร็จ (Status 200 OK)
-      // Backend API Edit User คืนค่า { message: ..., data: updatedUser }
-      const updatedUserData = response.data.data;
-      console.log("Profile update successful:", updatedUserData);
-
-      // **สำคัญ:** อัปเดตข้อมูลผู้ใช้ใน Auth Context ด้วยข้อมูลใหม่ที่ได้จาก Backend
-      // เพื่อให้ UI ส่วนอื่นๆ (เช่น AppBar) แสดงข้อมูลที่อัปเดต
-      updateAuthUser(updatedUserData); // ใช้ฟังก์ชัน updateAuthUser ที่ได้จาก Context
-
-      setSuccess(true); // ตั้งสถานะว่าสำเร็จ
-      // อาจจะหน่วงเวลาแล้ว Redirect กลับไปหน้าหลัก หรือหน้า Profile View (ถ้ามี)
-      // alert('แก้ไข Profile สำเร็จ!'); // แจ้งเตือน
-      setTimeout(() => {
-         navigate(`/editprofile/${currentUser.user_id}`); // Redirect กลับหน้าเดิม หรือหน้าหลัก
-      }, 2000);
+  }, [userId, isLoggedIn, currentUser, isAuthLoading, navigate, updateAuthUser]); // Dependencies Array
 
 
-    } catch (err) {
-      setError(err);
-      console.error("Edit profile failed:", err);
-      // จัดการ Error จาก Backend
-      const errorMessage = err.response?.data?.message || 'เกิดข้อผิดพลาดในการแก้ไข Profile';
-      alert(`Failed to edit profile: ${errorMessage}`);
-      // อาจจะพิจารณา Redirect ในกรณี Error บางประเภท เช่น 401, 403
-    } finally {
-      setIsSubmitting(false); // หยุดสถานะกำลังส่ง Form
-    }
-  };
-  // -----------------------------------------
+  // --- แสดง Loading ขณะโหลด Auth หรือ ข้อมูล Profile ---
+  if (isAuthLoading || loading) {
+      return (
+          <div className="full-screen-bg"> {/* ใช้ Style Background ขณะ Loading */}
+             <div className="edit-profile-box" style={{ textAlign: 'center' }}> {/* ใช้ Style Box ขณะ Loading */ }
+                <p>{isAuthLoading ? 'กำลังตรวจสอบสิทธิ์...' : 'กำลังโหลดข้อมูล Profile...'}</p>
+                {/* อาจเพิ่ม Loading Spinner ตรงนี้ได้ */}
+             </div>
+          </div>
+      );
+  }
+  // ----------------------------------------------------
+
+  // --- ฟังก์ชันจัดการเมื่อเลือกไฟล์รูป Profile ใหม่ (เพิ่ม Preview) ---
+  const handleFileChange = (event) => {
+    if (event.target.files && event.target.files[0]) {
+      const file = event.target.files[0];
+      setProfilePictureFile(file); // เก็บไฟล์ใหม่
+
+      // อ่านไฟล์เพื่อสร้าง URL สำหรับ Preview รูปใหม่
+      const reader = new FileReader();
+      reader.onloadend = () => {
+         setNewProfilePicturePreviewUrl(reader.result); // เก็บ Data URL ไว้ใน State ใหม่
+      };
+      reader.readAsDataURL(file);
+
+      console.log("Selected new file:", file);
+    } else {
+      setProfilePictureFile(null);
+      setNewProfilePicturePreviewUrl(null); // ล้าง Preview URL
+      console.log("No new file selected.");
+    }
+  };
+  // ---------------------------------------------------------
 
 
-  return (
-    <div className="edit-profile-page"> {/* Outer wrapper for the page */}
-      {/* AppBar ถูก Render ที่ App.jsx แล้ว */}
+  // --- ฟังก์ชันจัดการเมื่อ Form ถูก Submit ---
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-      {/* ส่วนเนื้อหาหลัก Container */}
-      {/* .edit-profile-page-container สามารถใช้ Style ร่วมกับหน้าอื่นๆ ได้ เช่น จัดกึ่งกลาง, ความกว้างสูงสุด */}
-      {/* หรืออาจจะใช้ className ที่เป็น Global Style ที่ทำไว้ เช่น .container */}
-      <div className="edit-profile-container"> {/* Container สำหรับเนื้อหา Form และข้อความ */}
+    setError(null);
+    setSuccess(false);
+    setIsSubmitting(true);
 
-        <h2>แก้ไข Profile</h2>
-        {/* แสดงข้อผิดพลาด */}
-        {error && <div style={{ color: 'red', marginBottom: '15px', textAlign: 'center', fontSize: '14px' }}>{error.message}</div>}
-        {/* แสดงข้อความสำเร็จ */}
-        {success && <div style={{ color: 'green', marginBottom: '15px', textAlign: 'center', fontSize: '14px' }}>แก้ไข Profile สำเร็จ! กำลังกลับหน้าหลัก...</div>}
+    try {
+      const formData = new FormData();
+      let isDataChanged = false;
 
+      // เปรียบเทียบค่าใน State (ซึ่งโหลดมาจาก Profile เดิม) กับค่าปัจจุบันใน Form
+      // ต้องแน่ใจว่าค่าเดิมใน State ได้ถูกโหลดมาอย่างสมบูรณ์แล้ว ก่อนหน้านี้
+      // ใช้ currentUser เป็นข้อมูลเปรียบเทียบเริ่มต้น ถ้า State ยังไม่โหลดค่าเดิม
+      if (username !== (currentUser?.username || '')) {
+         formData.append('username', username);
+         isDataChanged = true;
+      }
+      if (email !== (currentUser?.email || '')) {
+         formData.append('email', email);
+         isDataChanged = true;
+      }
+      if (password) {
+         formData.append('password', password);
+         isDataChanged = true;
+      }
+      if (profilePictureFile) {
+        formData.append('profilePicture', profilePictureFile); // ชื่อ field ต้องตรงกับ Backend
+        isDataChanged = true;
+      }
 
-        <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-
-           {/* Input Username */}
-          <div className="form-group"> {/* ใช้ className เดียวกับหน้า Login/Register/AddPost ได้ */}
-            <label htmlFor="username">Username:</label>
-            <input
-              type="text"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              disabled={isSubmitting || loading}
-            />
-          </div>
-          {/* Input Email */}
-          <div className="form-group">
-            <label htmlFor="email">Email:</label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={isSubmitting || loading}
-            />
-          </div>
-          {/* Input Password (สำหรับเปลี่ยน Password) */}
-          <div className="form-group">
-            <label htmlFor="password">เปลี่ยน Password:</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="เว้นว่างไว้หากไม่ต้องการเปลี่ยน Password" // บอกผู้ใช้ว่าถ้าไม่เปลี่ยนให้เว้นว่าง
-              disabled={isSubmitting || loading}
-            />
-          </div>
-           {/* แสดงรูป Profile ปัจจุบัน และ Input สำหรับเลือกไฟล์รูป Profile ใหม่ */}
-           <div className="form-group" style={{ textAlign: 'center' }}>
-             <label>รูป Profile ปัจจุบัน:</label>
-             {currentProfilePictureUrl && <img src={currentProfilePictureUrl} alt="Current Profile Picture" style={{ maxWidth: '100px', maxHeight: '100px', borderRadius: '50%', marginTop: '10px', marginBottom: '10px' }} />}
-             <br />
-             <label htmlFor="profilePictureFile">เลือกรูป Profile ใหม่ (Optional):</label>
-             <input
-               type="file"
-               id="profilePictureFile"
-               accept="image/*"
-               onChange={handleFileChange}
-               disabled={isSubmitting || loading}
-             />
-             {/* แสดงชื่อไฟล์ใหม่ที่เลือก (Optional) */}
-             {profilePictureFile && <p style={{ fontSize: '12px', marginTop: '5px' }}>ไฟล์ใหม่ที่เลือก: {profilePictureFile.name}</p>}
-           </div>
+      // ถ้าไม่มีการเปลี่ยนแปลงข้อมูลอะไรเลย
+      if (!isDataChanged) {
+           console.log("No data changed, skipping API call.");
+           setSuccess(true); // ถือว่าสำเร็จ
+           setIsSubmitting(false);
+            setTimeout(() => {
+               navigate(`/editprofile/${currentUser.user_id}`); // Redirect กลับหน้าเดิม หรือหน้าหลัก
+            }, 1000);
+           return;
+      }
 
 
-          <button type="submit" disabled={isSubmitting || loading || !username || !email}>
-            {isSubmitting ? 'กำลังบันทึก...' : 'บันทึก Profile'}
-          </button>
-        </form>
+      // **สำคัญ:** Backend PUT /api/users/:userId ต้องมีการตรวจสอบสิทธิ์!
+      const response = await axios.put(`${BASE_BACKEND_URL}/api/users/${userId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data', // ใช้เสมอเมื่อมีโอกาสส่งไฟล์
+        },
+      });
 
-      </div> 
-    </div> 
-  );
+      const updatedUserData = response.data.data;
+      console.log("Profile update successful:", updatedUserData);
+
+      // อัปเดตข้อมูลผู้ใช้ใน Auth Context
+      updateAuthUser(updatedUserData);
+
+      setSuccess(true);
+      setTimeout(() => {
+         navigate(`/editprofile/${currentUser.user_id}`); // Redirect กลับหน้าเดิม หรือหน้าหลัก
+      }, 2000);
+
+
+    } catch (err) {
+      setError(err);
+      console.error("Edit profile failed:", err);
+      const errorMessage = err.response?.data?.message || 'เกิดข้อผิดพลาดในการแก้ไข Profile';
+      alert(`Failed to edit profile: ${errorMessage}`);
+      // จัดการ Redirect ในกรณี Error บางประเภท (ตามที่คุณทำไว้ใน useEffect)
+      // if (err.response && (err.response.status === 401 || err.response.status === 403)) { ... navigate('/login'); }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+
+  return (
+    <>
+      {/* --- Div หลักที่มี Style Background เต็มจอ --- */}
+      <div className="full-screen-bg">
+
+            {/* ชื่อแอป/รูปภาพประกอบ ด้านนอกกล่อง ถ้าต้องการ */ }
+
+        {/* --- กล่องสำหรับ Form แก้ไข Profile (ใช้ Class edit-profile-box) --- */}
+        <div className="edit-profile-box">
+
+            {/* ปุ่มย้อนกลับ (ถ้าต้องการ) */ }
+            <button onClick={() => navigate(-1)} className="back-button top-left-button"> {/* ใช้ navigate(-1) หรือ Link */ }
+                ย้อนกลับ
+            </button>
+
+          {/* หัวข้อหน้าแก้ไข Profile */}
+          <h2 className="edit-profile-title">แก้ไข Profile</h2>
+
+          {/* แสดงข้อผิดพลาด */}
+          {error && <div style={{ color: 'red', marginBottom: '15px', textAlign: 'center', fontSize: '14px' }}>{error.message}</div>}
+          {/* แสดงข้อความสำเร็จ */}
+          {success && <div style={{ color: 'green', marginBottom: '15px', textAlign: 'center', fontSize: '14px' }}>แก้ไข Profile สำเร็จ!</div>}
+
+
+          {/* --- Form สำหรับ แก้ไข Profile --- */}
+          {/* ใช้ Style เดียวกับ Form ในหน้าอื่นๆ */ }
+          <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+
+             {/* Input Username */}
+            {/* ใช้ Class input-field แทน div.form-group และ Label */ }
+            <input
+              type="text"
+              placeholder="Username" // ใช้ Placeholder
+              id="username" // ยังคง id ไว้
+              className="input-field" // ใช้ Class input-field
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              disabled={isSubmitting || loading}
+            />
+            {/* Input Email */}
+            {/* ใช้ Class input-field แทน div.form-group และ Label */ }
+            <input
+              type="email"
+              placeholder="Email" // ใช้ Placeholder
+              id="email" // ยังคง id ไว้
+              className="input-field" // ใช้ Class input-field
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              disabled={isSubmitting || loading}
+            />
+            {/* Input Password (สำหรับเปลี่ยน Password) */}
+            {/* ใช้ Class input-field แทน div.form-group และ Label */ }
+            <input
+              type="password"
+              placeholder="เปลี่ยน Password (เว้นว่างหากไม่เปลี่ยน)" // ใช้ Placeholder
+              id="password" // ยังคง id ไว้
+              className="input-field" // ใช้ Class input-field
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={isSubmitting || loading}
+            />
+
+            {/* แสดงรูป Profile ปัจจุบัน และ Input สำหรับเลือกไฟล์รูป Profile ใหม่ (ปรับ Style) */}
+            {/* ใช้ Class profile-picture-group และ Class สำหรับรูป/Label/input */ }
+            <div className="profile-picture-group"> {/* Grouping div for styling */}
+                <label style={{ marginBottom: '10px' }}>รูป Profile ปัจจุบัน:</label>
+                {currentProfilePictureUrl && (
+                    <img
+                        src={currentProfilePictureUrl}
+                        alt="Current Profile Picture"
+                        className="current-profile-picture" // ใช้ Class สำหรับ Style รูปปัจจุบัน
+                    />
+                )}
+                <br /> {/* เว้นบรรทัด */}
+                <label htmlFor="profilePictureFile" className="custom-file-upload-button"> {/* ใช้ Label เป็นปุ่ม */}
+                    เลือกรูป Profile ใหม่ (Optional)
+                </label>
+                <input
+                    type="file"
+                    id="profilePictureFile" // id ต้องตรงกับ htmlFor ของ Label
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    disabled={isSubmitting || loading}
+                />
+                {/* แสดงชื่อไฟล์ใหม่ที่เลือก (Optional) */}
+                {profilePictureFile && <p className="selected-file-name">ไฟล์ใหม่ที่เลือก: {profilePictureFile.name}</p>}
+
+                {/* --- แสดง Preview รูป Profile ใหม่ที่เลือก --- */}
+                {newProfilePicturePreviewUrl && (
+                    <img
+                        src={newProfilePicturePreviewUrl}
+                        alt="New Profile Picture Preview"
+                        className="image-preview" // ใช้ Class สำหรับ Style รูป Preview (อาจใช้ Style เดียวกับ AddPost หรือสร้างใหม่)
+                         style={{ marginTop: '15px', borderRadius: '8px' }} // ปรับ margin และขอบ
+                    />
+                )}
+                {/* ------------------------------------------------- */}
+
+            </div> {/* End profile-picture-group */}
+
+
+          {/* ปุ่ม บันทึก Profile */}
+          <button
+             type="submit"
+             disabled={isSubmitting || loading || !username || !email}
+             className="save-profile-button" // ใช้ Class save-profile-button
+            >
+              {isSubmitting ? 'กำลังบันทึก...' : 'บันทึก Profile'}
+          </button>
+        </form>
+
+        </div> {/* สิ้นสุด .edit-profile-box */}
+      </div> {/* สิ้นสุด .full-screen-bg */}
+    </>
+  );
 }
 
 export default EditProfile;

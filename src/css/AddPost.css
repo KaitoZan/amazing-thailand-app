@@ -1,0 +1,117 @@
+/* src/css/AddPost.css */
+
+
+/* พื้นหลังเต็มจอ (คัดลอกมาจาก Login.css/Register.css) */
+.full-screen-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+        background:
+            linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+            url('../assets/bg.jpg') no-repeat center center;
+    background-size: cover;
+    display: flex;
+    align-items: center; /* จัดกลางแนวตั้ง */
+    justify-content: center; /* จัดกลางแนวนอน */
+    padding: 0 5vw;
+    }
+    
+    /* กล่องสำหรับ Form เพิ่มโพสต์ (ใช้ Style คล้าย login-box/register-box) */
+    .add-post-box { /* ใช้ชื่อ Class เฉพาะสำหรับหน้านี้ */
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(12px);
+        border-radius: 20px;
+        padding: 40px;
+        width: 600px; /* อาจปรับความกว้างให้กว้างกว่า Login/Register เล็กน้อยถ้าเนื้อหาเยอะ */
+        max-width: 90%;
+        height: auto; /* ให้ความสูงปรับตามเนื้อหา */
+        /* ถ้าใช้ justify-content: center ใน Parent แล้ว ไม่ต้องใช้ margin-left/right auto */
+        /* margin-left: auto; */
+        /* margin-right: auto; */
+        /* ถ้าต้องการขยับขึ้น/ลง สามารถใช้ margin-top หรือ bottom ได้ */
+    
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: #fff; /* สีตัวอักษรภายในกล่อง */
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* Style สำหรับหัวข้อในกล่อง */
+    .add-post-title { /* ใช้ชื่อ Class เฉพาะสำหรับหน้านี้ */
+        font-family: 'Charmonman', cursive; /* ใช้ Font เดียวกัน */
+        font-size: 36px; /* อาจปรับขนาดให้เหมาะสมกับหน้านี้ */
+        margin-bottom: 20px;
+        color: #fff;
+        text-align: center; /* จัดกลางหัวข้อ */
+    }
+    
+    
+    /* Style สำหรับ Form Element (ใช้ Class input-field เดียวกันกับ Login/Register) */
+    .input-field {
+        width: 100%;
+        /* height: 60px; */ /* ความสูง Input Field อาจไม่เท่ากัน ขึ้นอยู่กับชนิด */
+        margin: 10px 0;
+        padding: 14px;
+        border: none;
+        border-radius: 10px;
+        background: rgba(105, 71, 71, 0.2);
+        color: #fff;
+        font-size: 16px;
+        box-sizing: border-box;
+        resize: vertical; /* อนุญาตให้ปรับขนาด textarea ในแนวตั้ง */
+    }
+    
+    .input-field::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    /* Style เฉพาะสำหรับ Input File (ปรับปรุงให้ดูดีขึ้น) */
+    /* ซ่อน Input File เริ่มต้น แล้วใช้ Label หรือปุ่ม Custom แทน */
+    .custom-file-input {
+        color: rgba(255, 255, 255, 0.7);
+        background: rgba(105, 71, 71, 0.2);
+        border-radius: 10px;
+        padding: 14px;
+        width: 100%;
+        box-sizing: border-box;
+        margin: 10px 0;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    
+    /* Style สำหรับปุ่ม Submit (ใช้ Style คล้าย login-button/register-button) */
+    .add-post-button { /* ใช้ชื่อ Class เฉพาะสำหรับหน้านี้ */
+        margin-top: 20px;
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(45deg, hsla(0, 100%, 56%, 0.557), #e2b75a83, #8163d383); /* ใช้ Gradient เดียวกัน */
+        border: none;
+        border-radius: 12px;
+        color: #fff;
+        font-size: 20px !important;
+        cursor: pointer;
+        font-family: 'Charmonman', cursive;
+        transition: opacity 0.3s ease;
+    }
+    
+    .add-post-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .add-post-button:hover:not(:disabled) {
+        opacity: 0.9;
+    }
+    .image-preview {
+        display: block; /* ทำให้รูปภาพขึ้นบรรทัดใหม่ */
+        max-width: 50%; /* ความกว้างสูงสุดไม่เกินกล่อง Form */
+        height: auto; /* รักษาอัตราส่วน */
+        margin-top: 10px; /* ระยะห่างด้านบน */
+        border-radius: 8px; /* ขอบมนเล็กน้อย */
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.3); /* เพิ่มเงาเล็กน้อย */
+    }
+    

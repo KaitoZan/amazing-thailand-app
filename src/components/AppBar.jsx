@@ -112,7 +112,7 @@ export default function AppBar({ searchTerm, onSearchChange, setStartDate, setEn
           // ถ้า Login อยู่
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             {/* Link ไปหน้าเพิ่มโพสต์ */}
-            <Link to="/addpost" className="appbar-button" style={{ textDecoration: 'none' }}>เพิ่มโพสต์</Link>
+            <Link to="/addpost" className="appbar-button" style={{ textDecoration: 'none', fontSize: '20px', color: 'white',paddingRight: '20px' }}>เพิ่มโพสต์</Link>
 
             {/* แสดงชื่อผู้ใช้ (ทำเป็น Link ไปหน้า Profile) */}
             {/* ต้องตรวจสอบว่า currentUser และ user_id มีค่าก่อนสร้าง Link */}

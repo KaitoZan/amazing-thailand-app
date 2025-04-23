@@ -1,25 +1,26 @@
-// src/views/Logintest.jsx (หรือเปลี่ยนชื่อเป็น Login.jsx)
+// src/views/Login.jsx
 import React, { useState } from "react";
-import "../css/Login.css"; // Import ไฟล์ CSS สำหรับ Style (คุณอาจเปลี่ยนชื่อเป็น Login.css)
+import "../css/Login.css"; // Import ไฟล์ CSS สำหรับ Style
 // --- นำเข้า Hook และ Library ที่จำเป็นสำหรับ Login ---
 import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom'; // ใช้ Link แทน a tag
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 // ---------------------------------------------------
-import AppBar from "../components/AppBar"; // สมมติว่ามี Component AppBar หรืออาจนำไปใส่ใน Layout หลัก
-import Popper from '@mui/material/Popper';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import SubButton from '@mui/material/Button'; // ใช้ SubButton ใน Popper
+// ถ้าไม่ได้ใช้ใน Component นี้ ให้ลบ Imports เหล่านี้ออก
+// import AppBar from "../components/AppBar";
+// import Popper from '@mui/material/Popper';
+// import Box from '@mui/material/Box';
+// import Typography from '@mui/material/Typography';
+// import SubButton from '@mui/material/Button';
 
 
 const BASE_BACKEND_URL = 'https://amazing-thailand-server.vercel.app'; // <-- ใช้ URL จริงของคุณ
 
-// เปลี่ยนชื่อ Component จาก Logintest เป็น Login เพื่อความชัดเจน
+// Component Login
 function Login() {
   // --- Hook และ State ที่จำเป็นสำหรับ Login ---
   const auth = useAuth();
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // ใช้ Hook useNavigate
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -27,177 +28,157 @@ function Login() {
   const [error, setError] = useState(null);
   // -----------------------------------------
 
-  // --- State และ Handler เดิมสำหรับควบคุมการเปิด/ปิด Popper (ปัจจุบันใช้กับปุ่ม Login ซึ่งอาจไม่ใช่การใช้งานที่ต้องการ) ---
-  const [open, setOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
+  // --- Handler สำหรับปุ่มย้อนกลับ ---
+  const handleGoBack = () => {
+navigate(-1); // กลับไปยังหน้าก่อนหน้าใน History Stack
+  };
+  // -----------------------------------
 
-  const handleLoginClickPopper = (event) => { // เปลี่ยนชื่อ Handler เพื่อความชัดเจน
-    setOpen((previousOpen) => !previousOpen);
-    setAnchorEl(event.currentTarget);
-  };
-  const handleDisagree = () => {
-    console.log("Clicked Disagree");
-    setOpen(false);
-  };
-const handleGoBack = () => {
-  navigate(-1); // กลับไปยังหน้าก่อนหน้าใน History Stack
-  // หรือ navigate('/'); เพื่อกลับหน้าแรกเสมอ
-};
+   // Handler และ State สำหรับ Popper ถ้าไม่ได้ใช้ใน Component นี้ สามารถลบทิ้งได้
+   // const [open, setOpen] = useState(false);
+   // const [anchorEl, setAnchorEl] = useState(null);
 
-  const handleAgree = () => {
-    console.log("Clicked Agree");
-    // **หมายเหตุ:** Logic 'ตกลง' สำหรับ Popper ถามออกจากระบบ
-    // ไม่ควรอยู่ที่ปุ่ม Login ครับ ควรย้ายไปอยู่ที่ปุ่ม Logout ใน AppBar หรือ Profile
-    // ในที่นี้จะแค่ปิด Popper ไว้ก่อน
-    setOpen(false);
-  };
-  // ----------------------------------------------------------------------------------------------------------
+   // const handleLoginClickPopper = (event) => {
+   //   setOpen((previousOpen) => !previousOpen);
+   //   setAnchorEl(event.currentTarget);
+   // };
+   // const handleDisagree = () => {
+   //   console.log("Clicked Disagree");
+   //   setOpen(false);
+   // };
+
+   // const handleAgree = () => {
+   //   console.log("Clicked Agree");
+   //   setOpen(false); // แค่ปิด Popper
+   // };
+   // ---------------------------------------------
+
 
   // ฟังก์ชันจัดการเมื่อ Form ถูก Submit
   const handleSubmit = async (event) => {
-    event.preventDefault(); // ป้องกันการ Refresh หน้าเว็บ
+event.preventDefault();
 
-    setError(null); // Clear error ก่อนลอง Login ใหม่
+setError(null);
 
-    // ตรวจสอบว่ากรอกข้อมูลครบหรือไม่
-    if (!email || !password) {
-      setError({ message: 'กรุณากรอก Email และ Password' });
-      return;
-    }
+if (!email || !password) {
+ setError({ message: 'กรุณากรอก Email และ Password' });
+ return;
+}
 
-    setLoading(true); // ตั้งสถานะว่ากำลังโหลด
+setLoading(true);
 
-    try {
-      // เรียก API Login ที่ Backend
-      const response = await axios.post(`${BASE_BACKEND_URL}/api/users/login`, {
-        email: email,
-        password: password,
-      });
+try {
+ // ตรวจสอบ Endpoint Login ใน Backend ของคุณอีกครั้ง
+ // ถ้าใช้ /api/auth/login ให้แก้ URL ตรงนี้ (ตามโค้ด Backend ก่อนหน้าคือ /api/auth/login)
+ const response = await axios.post(`${BASE_BACKEND_URL}/api/users/login`, {
+   email: email,
+   password: password,
+ });
 
-      // ถ้า Login สำเร็จ (Status 200) Backend จะคืนค่า { message: ..., data: userData }
-      const userData = response.data.data;
+ const userData = response.data.data;
+ auth.login(userData); // เรียกฟังก์ชัน login จาก Auth Context
 
-      // เรียกฟังก์ชัน login จาก Auth Context เพื่ออัปเดตสถานะและเก็บข้อมูลผู้ใช้
-      auth.login(userData);
+      navigate('/'); // Redirect ไปหน้าหลักหลังจาก Login สำเร็จ
 
-      // Redirect ผู้ใช้ไปยังหน้าหลัก หรือหน้าที่ต้องการหลังจาก Login สำเร็จ
-      navigate('/');
+} catch (err) {
+ console.error("Login failed:", err);
+ const errorMessage = err.response?.data?.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ';
+ setError({ message: errorMessage });
 
-    } catch (err) {
-      console.error("Login failed:", err);
-      // จัดการ Error จาก Backend
-      const errorMessage = err.response?.data?.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ';
-      setError({ message: errorMessage });
-
-    } finally {
-      setLoading(false); // หยุดสถานะโหลด
-    }
+} finally {
+ setLoading(false);
+}
   };
 
-  // ค่า ID สำหรับ Popper (สำหรับปุ่ม Login/Logout ในอนาคต)
-  const id = open ? 'popper-login-logout' : undefined;
+  // ค่า ID สำหรับ Popper (ถ้าใช้)
+  // const id = open ? 'popper-login-logout' : undefined;
 
 
   return (
-    <>
-      {/* Div หลักที่มี Style Background */}
-      <div className="full-screen-bg">
+<>
+ {/* Div หลักที่มี Style Background เต็มจอ */}
+ <div className="full-screen-bg">
 
-<h1 className="app-title">Amazing Thailand</h1> 
-<h1 className="app-title2">Picture</h1> 
-<img src='./fw.gif' width="25%" className="my-fw-image" />
-<img src='./fw.gif' width="25%" className="my-fw-image2" />
-        {/* กล่อง Login */}
-        <div className="login-box">
-<div className='back-button-container' style={{ marginTop: '0px', marginBottom: '-20px', paddingLeft: '290px',fontFamily: 'Charmonman' ,fontSize: '20px',width: '400px'}}>
-             <button onClick={handleGoBack} className="back-button" style={{ backgroundColor: 'rgba(105, 71, 71, 0.2)', color: 'white',transition: 'backgroundcolor 0.3s ease'}}> {/* ใช้ className back-button เพื่อ Style ปุ่ม */}
-                ย้อนกลับ
+            {/* ชื่อแอปด้านบน (ใช้ Class ใน CSS จัดตำแหน่ง) */}
+            {/* <h1 className="app-title">Amazing Thailand</h1> */}
+            {/* <h1 className="app-title2">Picture</h1> */}
+
+            {/* รูปภาพ fw.gif (ใช้ Class ใน CSS จัดตำแหน่ง) */}
+            <img src='./fw.gif' width="25%" className="my-fw-image" alt="Decoration" />
+            <img src='./fw.gif' width="25%" className="my-fw-image2" alt="Decoration" />
+            <img src='./fw.gif' width="25%" className="my-fw-image3" alt="Decoration" />
+
+   {/* กล่อง Login (ใช้ Class login-box) */}
+   <div className="login-box">
+
+            {/* --- ปุ่มย้อนกลับ (อยู่ใน .login-box) --- */}
+            {/* ลบ div ที่ครอบปุ่มออก และใช้ className back-button top-left-button */}
+            {/* ลบ inline style บนปุ่มออก และกำหนด style ใน CSS แทน */ }
+            <button onClick={handleGoBack} className="back-button top-left-button">
+                 ย้อนกลับ
             </button>
-        </div>
-        <img src='./profile.png'width="25%"/>
-          <h2 className="login-title">Login</h2>
+            {/* ------------------------------------- */}
 
-          {/* แสดงข้อผิดพลาด */}
-          {error && <div style={{ color: 'red', marginBottom: '15px', textAlign: 'center', fontSize: '14px' }}>{error.message}</div>}
-
-          {/* --- Form สำหรับ Login --- */}
-          <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}> {/* กำหนด Style ให้ Form จัดเรียงสวยงาม */}
-            {/* Icon ผู้ใช้ Placeholder ถ้าต้องการ */}
-            {/* <div className="icon-placeholder" /> */}
-
-            {/* Input Email/Username */}
-            <input
-              type="email" // Backend ใช้ email ในการ Login
-              placeholder="Email" // แก้ Placeholder ให้ตรงกับ Backend
-              className="input-field"
-              value={email} // เชื่อมกับ State
-              onChange={(e) => setEmail(e.target.value)} // อัปเดต State เมื่อมีคนพิมพ์
-              required
-              disabled={loading} // ปิดการใช้งานระหว่างโหลด
-            />
-            {/* Input Password */}
-            <input
-              type="password"
-              placeholder="Password"
-              className="input-field"
-              value={password} // เชื่อมกับ State
-              onChange={(e) => setPassword(e.target.value)} // อัปเดต State เมื่อมีคนพิมพ์
-              required
-              disabled={loading} // ปิดการใช้งานระหว่างโหลด
-            />
-
-            {/* Links ด้านล่าง Form */}
-            <div className="links" style={{ width: '100%' ,paddingLeft: '235px', }}> {/* กำหนดความกว้างเพื่อให้จัดซ้ายขวาได้ */}
-              {/* ใช้ Link Component จาก react-router-dom สำหรับ Navigate */}
-              <Link to="/register"sty>Register</Link> {/* ลิงก์ไปหน้า Register */}
+            {/* รูป profile.png (ในกล่อง Login) */}
+            {/* ใช้ style ผ่าน Class ใน CSS ถ้าต้องการ */ }
+            <img src='./profile.png' width="25%" style={{ marginBottom: '20px' }} alt="Profile Icon" />
 
 
-              
-            </div>
-<hr style={{ width: '100%', marginTop: '20px', marginBottom: '10px' }} />
-            {/* Social Login Section (UI ที่มีอยู่แล้ว) */}
-           
+ <h2 className="login-title">Login</h2>
 
-            {/* ปุ่ม Login ที่เป็น Submit Button ของ Form */}
-            <button
-              className="login-button"
-              type="submit" // กำหนด Type เป็น submit เพื่อให้ Form ทำงาน
-              disabled={loading} // ปิดการใช้งานระหว่างโหลด
-              // onClick={handleLoginClickPopper} // **หมายเหตุ:** การคลิกปุ่ม Login ควร Submit Form ไม่ใช่เปิด Popper ถาม Logout
-            >
-              {loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'} {/* เปลี่ยน Text ตามสถานะ Loading */}
-            </button>
-          </form>
-          {/* --------------------------------- */}
+ {/* แสดงข้อผิดพลาด */}
+ {error && <div style={{ color: 'red', marginBottom: '15px', textAlign: 'center', fontSize: '14px' }}>{error.message}</div>}
 
-          {/* Component Popper (น่าจะใช้สำหรับ Logout จาก AppBar หรือ Profile) */}
-          {/* เก็บโค้ด Popper ไว้ แต่ควรย้ายไปใช้กับปุ่ม Logout ที่เหมาะสม */}
-          <Popper
-            id={id}
-            open={open}
-            anchorEl={anchorEl}
-            placement="bottom"
-            disablePortal={false}
-            modifiers={[
-              { name: 'flip', enabled: true, options: { altBoundary: true, rootBoundary: 'document', padding: 8 } },
-              { name: 'preventOverflow', enabled: true, options: { altAxis: false, altBoundary: false, tether: false, rootBoundary: 'document', padding: 8 } },
-              { name: 'arrow', enabled: false, options: { element: undefined } },
-            ]}
-          >
-            <Box sx={{ border: '1px solid grey', p: 1, bgcolor: 'background.paper', mt: 1 ,color: 'black' ,borderRadius: '15px' ,fontFamily: 'Charmonman', }}>
-              <Typography variant="subtitle1" component="h6" gutterBottom className="label">
-                ยืนยันที่จะออกจากระบบใหม?
-              </Typography>
-              <Box sx={{ display: 'flex', justifyContent: ' center', gap: 1 }}>
-                <SubButton size="small" onClick={handleDisagree}> ยกเลิก </SubButton>
-                <SubButton size="small" onClick={handleAgree}> ตกลง </SubButton>
-              </Box>
-            </Box>
-          </Popper>
+ {/* --- Form สำหรับ Login --- */}
+ {/* ลบ inline style ที่ซ้ำซ้อนออกถ้ากำหนดใน CSS แล้ว */}
+ <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+  {/* Input Email */}
+  <input
+    type="email"
+    placeholder="Email"
+    className="input-field" // ใช้ Class input-field
+    value={email}
+    onChange={(e) => setEmail(e.target.value)}
+    required
+    disabled={loading}
+  />
+  {/* Input Password */}
+  <input
+    type="password"
+    placeholder="Password"
+    className="input-field" // ใช้ Class input-field
+    value={password}
+    onChange={(e) => setPassword(e.target.value)}
+    required
+    disabled={loading}
+  />
 
-        </div>
-      </div>
-    </>
+  {/* ลิงก์ไปหน้า Register (ใช้ Class ใน CSS จัด Style) */}
+  {/* ลบ inline style ออก */}
+  <div className="links">
+    <Link to="/register">Register</Link>
+  </div>
+
+            <hr style={{ width: '100%', marginTop: '20px', marginBottom: '10px' }} />
+
+  {/* ปุ่ม Login (ใช้ Class login-button) */}
+  <button
+    className="login-button" // ใช้ Class login-button
+    type="submit"
+    disabled={loading}
+  >
+    {loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
+  </button>
+ </form>
+ {/* --------------------------------- */}
+
+ {/* ส่วนของ Popper หรือ Element อื่นๆ ที่ไม่เกี่ยวข้อง สามารถลบทิ้งได้ */ }
+ { /* ... โค้ด Popper ... */ }
+
+
+   </div> {/* สิ้นสุด .login-box */}
+ </div> {/* สิ้นสุด .full-screen-bg */}
+</>
   );
 }
 
