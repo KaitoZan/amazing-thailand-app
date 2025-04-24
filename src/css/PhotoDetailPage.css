@@ -58,9 +58,7 @@
   }
   
   /* Style เดิมสำหรับส่วนแสดง Comment (ซึ่งอยู่ภายใน comments-section-container) */
-  .comments-section {
-     /* margin-top: 0; */ /* อาจต้องปรับ Margin ด้านบนของส่วน Comment */
-  }
+
   
   
   /* Style สำหรับรูปภาพหลัก */
@@ -292,9 +290,7 @@
        /* padding-left: 0; */
     }
   
-    .photo-detail-image {
-        /* อาจปรับ margin รูปภาพเมื่อเป็นคอลัมน์เดียว ถ้าต้องการ */
-    }
+
     /* ใน PhotoDetailPage.css */
 /* ใน PhotoDetailPage.css */
 .back-button-container {

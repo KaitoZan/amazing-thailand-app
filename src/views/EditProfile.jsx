@@ -1,4 +1,4 @@
-// src/views/EditProfile.jsx (Updated for Styling)
+// src/views/EditProfile.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom'; // เพิ่ม Link และนำเข้า useParams
 import axios from 'axios';
@@ -192,7 +192,7 @@ function EditProfile() {
            setSuccess(true); // ถือว่าสำเร็จ
            setIsSubmitting(false);
             setTimeout(() => {
-               navigate(`/editprofile/${currentUser.user_id}`); // Redirect กลับหน้าเดิม หรือหน้าหลัก
+               navigate('/'); // <--- เปลี่ยนตรงนี้เป็น '/'
             }, 1000);
            return;
       }
@@ -213,7 +213,7 @@ function EditProfile() {
 
       setSuccess(true);
       setTimeout(() => {
-         navigate(`/editprofile/${currentUser.user_id}`); // Redirect กลับหน้าเดิม หรือหน้าหลัก
+         navigate('/'); // <--- เปลี่ยนตรงนี้เป็น '/'
       }, 2000);
 
 
@@ -298,13 +298,22 @@ function EditProfile() {
             {/* ใช้ Class profile-picture-group และ Class สำหรับรูป/Label/input */ }
             <div className="profile-picture-group"> {/* Grouping div for styling */}
                 <label style={{ marginBottom: '10px' }}>รูป Profile ปัจจุบัน:</label>
-                {currentProfilePictureUrl && (
+                {/* แสดงรูป Profile ปัจจุบัน โดยใช้ currentProfilePictureUrl */}
+                {currentProfilePictureUrl ? (
                     <img
                         src={currentProfilePictureUrl}
                         alt="Current Profile Picture"
                         className="current-profile-picture" // ใช้ Class สำหรับ Style รูปปัจจุบัน
                     />
+                ) : (
+                    // แสดงรูป Default ถ้าไม่มีรูป Profile ปัจจุบัน
+                    <img
+                        src="/path/to/default/profile.png" // <-- ใส่ Path ไปยังรูป Default ของคุณที่นี่
+                        alt="Default Profile Picture"
+                        className="current-profile-picture"
+                    />
                 )}
+
                 <br /> {/* เว้นบรรทัด */}
                 <label htmlFor="profilePictureFile" className="custom-file-upload-button"> {/* ใช้ Label เป็นปุ่ม */}
                     เลือกรูป Profile ใหม่ (Optional)
@@ -325,7 +334,7 @@ function EditProfile() {
                         src={newProfilePicturePreviewUrl}
                         alt="New Profile Picture Preview"
                         className="image-preview" // ใช้ Class สำหรับ Style รูป Preview (อาจใช้ Style เดียวกับ AddPost หรือสร้างใหม่)
-                         style={{ marginTop: '15px', borderRadius: '8px' }} // ปรับ margin และขอบ
+                         style={{ marginTop: '15px', borderRadius: '8px' }} // ปรับ margin และขอบ
                     />
                 )}
                 {/* ------------------------------------------------- */}

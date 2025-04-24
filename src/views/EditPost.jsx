@@ -1,232 +1,353 @@
 // src/views/EditPost.jsx
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom'; // นำเข้า useParams
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useAuth } from '../contexts/AuthContext'; // นำเข้า useAuth Hook
-// อาจจะสร้างไฟล์ EditPost.css สำหรับ Style หน้า Edit Post
-// import './EditPost.css';
+import { useNavigate, useParams } from 'react-router-dom'; // นำเข้า useParams
+import { useAuth } from '../contexts/AuthContext';
+// --- นำเข้าไฟล์ CSS ที่สร้างใหม่ ---
+import '../css/EditPost.css';
+// -------------------------------
 
 const BASE_BACKEND_URL = 'https://amazing-thailand-server.vercel.app'; // <-- ใช้ URL จริงของคุณ
 
 function EditPost() {
-  // --- ใช้ useAuth Hook เพื่อตรวจสอบสิทธิ์และดึงข้อมูลผู้ใช้ ---
-  const { currentUser, isLoggedIn, isLoading: isAuthLoading } = useAuth(); // เปลี่ยนชื่อ isLoading เป็น isAuthLoading เพื่อไม่ให้ซ้ำกับ state loading ของหน้านี้
-  // --------------------------------------------------------------------
+  // --- ใช้ Hook ที่จำเป็น ---
+  const { currentUser, isLoggedIn, isLoading: isAuthLoading } = useAuth(); // ตรวจสอบสิทธิ์
+  const { photoId } = useParams(); // ดึง photoId จาก URL
+  const navigate = useNavigate(); // สำหรับ Redirect
+  // ---------------------------
 
-  const { photoId } = useParams(); // ดึง photoId จาก URL Parameter
-  const navigate = useNavigate();
+  // --- State สำหรับเก็บข้อมูลโพสต์และ Form ---
+  const [postData, setPostData] = useState(null); // เก็บข้อมูลโพสต์เก่าที่ดึงมา
+  const [locationName, setLocationName] = useState('');
+  const [description, setDescription] = useState('');
+  const [photoFile, setPhotoFile] = useState(null); // ไฟล์รูปภาพใหม่ที่ผู้ใช้เลือก
+  const [newPhotoPreviewUrl, setNewPhotoPreviewUrl] = useState(null); // Preview รูปภาพใหม่
+  // ----------------------------------------
 
-  // --- State สำหรับเก็บค่าที่ผู้ใช้กรอกใน Form ---
-  const [locationName, setLocationName] = useState('');
-  const [description, setDescription] = useState('');
-  const [photoFile, setPhotoFile] = useState(null); // State สำหรับเก็บไฟล์รูปภาพใหม่
-  // State สำหรับเก็บ URL รูปภาพปัจจุบัน (เผื่อแสดง preview)
-  const [currentImageUrl, setCurrentImageUrl] = useState('');
-  // ---------------------------------------------
+  // State สำหรับจัดการสถานะและข้อผิดพลาด/สำเร็จ
+  const [loading, setLoading] = useState(true); // ตั้งต้นเป็น true เพราะต้องโหลดข้อมูลโพสต์เก่า
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false); // สถานะกำลังส่งข้อมูล Form
 
-  // State สำหรับจัดการสถานะและข้อผิดพลาด/สำเร็จ
-  const [loading, setLoading] = useState(true); // ตั้งต้นเป็น true เพราะต้องโหลดข้อมูลเก่าก่อน
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false); // สถานะกำลังส่งข้อมูล Form
-
-  // --- Effect สำหรับดึงข้อมูลโพสต์เก่าและตรวจสอบสิทธิ์ ---
-  useEffect(() => {
-    const fetchPhotoData = async () => {
-      // รอตรวจสอบ Auth เสร็จก่อน
-      if (isAuthLoading) return;
-
-      // ถ้าไม่ได้ Login หรือ ไม่มี currentUser หลัง Auth โหลดเสร็จ ให้ Redirect ออก
-      if (!isLoggedIn || !currentUser) {
-          alert('กรุณาเข้าสู่ระบบเพื่อแก้ไขโพสต์');
-          navigate('/login');
-          return;
-      }
-
-      // ถ้า Login แล้ว ให้ดึงข้อมูลโพสต์
-      try {
-        setLoading(true); // เริ่มโหลดข้อมูลโพสต์
-        setError(null);
-
-        const response = await axios.get(`${BASE_BACKEND_URL}/api/photos/${photoId}`);
-        const photoData = response.data.data;
-
-        // **ตรวจสอบสิทธิ์: ผู้ใช้ที่ Login ต้องเป็นเจ้าของโพสต์**
-        if (currentUser.user_id !== photoData.user_id) {
-            alert('คุณไม่มีสิทธิ์แก้ไขโพสต์นี้'); // แจ้งเตือนว่าไม่ใช่เจ้าของ
-            navigate('/'); // Redirect ออกไปหน้าหลัก
-            return; // หยุดการทำงานต่อ
-        }
-
-        // ถ้าเป็นเจ้าของ ให้กำหนดค่าเก่าลงใน State ของ Form
-        setLocationName(photoData.location_name);
-        setDescription(photoData.description || ''); // กำหนดเป็น string ว่าง ถ้า description เป็น null
-        setCurrentImageUrl(photoData.image_url); // เก็บ URL รูปภาพเก่า
-
-      } catch (err) {
-        setError(err);
-        console.error(`Failed to fetch photo details for ID ${photoId}:`, err);
-        const errorMessage = err.response?.data?.message || 'เกิดข้อผิดพลาดในการดึงข้อมูลโพสต์';
-        alert(`Error: ${errorMessage}`);
-        // ถ้า Error 404 redirect ไปหน้าหลัก หรือหน้า Error
-         if (err.response && err.response.status === 404) {
-             navigate('/'); // Redirect ไปหน้าหลักถ้าไม่พบโพสต์
-         }
-      } finally {
-        setLoading(false); // โหลดข้อมูลโพสต์เสร็จสิ้น
-      }
-    };
-
-    // ดึงข้อมูลเมื่อ photoId หรือสถานะ Auth เปลี่ยน
-    if (photoId) {
-        fetchPhotoData();
-    }
-
-  }, [photoId, isLoggedIn, currentUser, isAuthLoading, navigate]); // Dependencies Array
-
-  // ถ้ายังโหลด Auth หรือข้อมูลโพสต์อยู่ ให้แสดง Loading
-  if (isAuthLoading || loading) {
-      return <div>กำลังโหลดข้อมูล...</div>;
-  }
-
-  // ถ้าโหลดเสร็จแล้ว แต่ไม่ใช่เจ้าของ (Logic อยู่ใน useEffect แล้ว แต่เช็คซ้ำเพื่อความปลอดภัย)
-   if (!isLoggedIn || !currentUser || (photoId && !error && !loading && currentUser.user_id !== parseInt(photoId))) {
-      // ในทางปฏิบัติ useEffect ด้านบนจะจัดการ Redirect ไปแล้ว แต่มี check นี้เผื่อไว้
-      return null; // หรือแสดงข้อความ "กำลัง Redirect..."
-   }
+  // --- Effect สำหรับดึงข้อมูลโพสต์เก่าและตรวจสอบสิทธิ์ ---
+  useEffect(() => {
+    console.log("useEffect in EditPost running...");
+    console.log("isAuthLoading:", isAuthLoading);
+    console.log("isLoggedIn:", isLoggedIn);
+    console.log("currentUser:", currentUser);
+    console.log("photoId from URL:", photoId);
 
 
-  // --- ฟังก์ชันจัดการเมื่อเลือกไฟล์รูปใหม่ ---
-  const handleFileChange = (event) => {
-    setPhotoFile(event.target.files[0]); // เก็บไฟล์ใหม่ที่เลือก
-    // อาจจะแสดง Preview รูปใหม่ที่นี่ด้วย
-  };
+    const fetchPostData = async (idToFetch) => { // รับ photo id ที่ต้องการ fetch
+      console.log("Attempting to fetch post data for photo ID:", idToFetch);
+      try {
+        setLoading(true); // เริ่มโหลดข้อมูลโพสต์
+        setError(null);
 
-  // --- ฟังก์ชันจัดการเมื่อ Form ถูก Submit ---
-  const handleSubmit = async (event) => {
-    event.preventDefault(); // ป้องกันการ Refresh หน้าเว็บ
+        // *** สมมติว่า Backend มี Endpoint GET /api/photos/:photoId สำหรับดึงข้อมูลโพสต์ ***
+        // (ถ้า Backend คุณยังไม่มี ต้องเพิ่ม Endpoint นี้ใน photo.route และ controller ครับ)
+        const response = await axios.get(`${BASE_BACKEND_URL}/api/photos/${idToFetch}`); // ใช้ idToFetch
+        const fetchedPostData = response.data.data; // สมมติ Backend ส่งข้อมูลโพสต์ใน field 'data'
+        console.log("Fetch successful, post data:", fetchedPostData);
 
-    setError(null); // Clear error ก่อนลอง Submit ใหม่
-    setSuccess(false); // Clear success message
-    setIsSubmitting(true); // ตั้งสถานะกำลังส่ง Form
+        // **ตรวจสอบสิทธิ์: ผู้ใช้ที่ Login ต้องเป็นเจ้าของโพสต์นี้**
+        // การตรวจสอบนี้ควรทำหลังจากโหลด Auth และ fetch data แล้ว
+        if (!currentUser || currentUser.user_id !== fetchedPostData.user_id) {
+            console.log("User is not the owner of this post. Redirecting.");
+            alert('คุณไม่มีสิทธิ์แก้ไขโพสต์นี้'); // แจ้งเตือนว่าไม่ใช่เจ้าของ
+            navigate('/'); // Redirect ออกไปหน้าหลัก
+            return; // หยุดการทำงานต่อ
+        }
 
-    try {
-      // Backend API photos (PUT) ต้องการ multipart/form-data ถ้ามีการส่งไฟล์รูปใหม่
-      // หรืออาจจะรับ JSON ถ้าแก้ไขแค่ข้อความ (ขึ้นอยู่กับการออกแบบ Backend)
-      // ถ้า Backend รับ multipart/form-data ตลอด ก็ใช้ FormData ได้เลย
-      const formData = new FormData();
-      formData.append('location_name', locationName);
-      formData.append('description', description || ''); // ส่ง description เป็น string ว่าง ถ้าไม่มีค่า
-      // **สำคัญ:** Backend PUT /api/photos/:photoId คาดว่าจะมีการตรวจสอบ user_id ใน Backend ด้วย!
-      // Frontend อาจจะส่ง user_id ไปด้วยเผื่อ Backend ต้องการ แต่ส่วนใหญ่ Backend จะดึง user_id จาก Token/Session
-      // ใน Backend Controller ของคุณ มีการดึง user_id จาก Body
-      // formData.append('user_id', currentUser.user_id); // ถ้า Backend ต้องการรับ user_id ใน Body ตอน PUT
+        // ถ้าเป็นเจ้าของ ให้กำหนดข้อมูลเก่าลงใน State ของ Form
+        setPostData(fetchedPostData); // เก็บข้อมูลโพสต์ทั้งหมด
+        setLocationName(fetchedPostData.location_name || '');
+        setDescription(fetchedPostData.description || '');
+        // ไม่ต้องกำหนด photoFile หรือ Preview URL สำหรับรูปเก่า
 
-      // เพิ่มไฟล์รูปภาพใหม่ ถ้าผู้ใช้เลือกไฟล์ใหม่
-      if (photoFile) {
-        formData.append('photoImage', photoFile); // ชื่อ field 'photoImage' ต้องตรงกับที่ Backend ใช้ Multer
-      } else {
-        // ถ้าไม่ได้เลือกไฟล์ใหม่ Backend อาจจะต้องการ Flag บางอย่าง หรือ Backend ฉลาดพอจะรู้ว่าไม่มีไฟล์ใหม่
-        // ขึ้นอยู่กับการออกแบบ Backend API PUT
-      }
+      } catch (err) {
+        console.error("Failed to fetch post data:", err);
+        setError(err);
+        const errorMessage = err.response?.data?.message || 'เกิดข้อผิดพลาดในการดึงข้อมูลโพสต์';
 
+        // จัดการ Redirect ตาม Error Status (เช่น ถ้าโพสต์ไม่พบ หรือไม่มีสิทธิ์)
+         if (err.response && err.response.status === 404) {
+             console.log("Post not found (404). Redirecting.");
+             navigate('/'); // Redirect ไปหน้าหลักถ้าไม่พบโพสต์
+         } else if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+              console.log("Authorization error (401/403) while fetching post. Redirecting to login.");
+             navigate('/login'); // Redirect ไปหน้า Login ถ้าไม่มีสิทธิ์
+         } else {
+             // จัดการ Error อื่นๆ
+              alert(`Error: ${errorMessage}`); // แสดง Alert สำหรับ Error อื่นๆ
+              navigate('/'); // Redirect ไปหน้าหลักสำหรับ Error อื่นๆ
+         }
 
-      // เรียก API แก้ไขโพสต์รูปภาพที่ Backend (ใช้ PUT Method)
-      // ถ้าไม่มีไฟล์ใหม่ส่งไป axios.put จะส่งเป็น application/json หรือ form-urlencoded ขึ้นอยู่กับ FormData
-      const response = await axios.put(`${BASE_BACKEND_URL}/api/photos/${photoId}`, formData, {
-        // กำหนด Header ถ้ามีการส่งไฟล์ (Backend ที่รับ multipart/form-data ตลอด ก็ระบุ header นี้)
-        headers: {
-          'Content-Type': 'multipart/form-data', // อาจปรับเป็น application/json ถ้าแก้ไขแค่ข้อความและ Backend รองรับ
-        },
-      });
-
-      // ถ้าแก้ไขสำเร็จ (Status 200 OK)
-      // Backend API Edit Photo คืนค่า { message: ..., data: updatedPhoto }
-      setSuccess(true); // ตั้งสถานะว่าสำเร็จ
-      // อาจจะหน่วงเวลาแล้ว Redirect กลับไปหน้าดูรายละเอียดโพสต์ หรือหน้าหลัก
-      // alert('แก้ไขโพสต์รูปภาพสำเร็จ!'); // แจ้งเตือน
-      setTimeout(() => {
-         navigate(`/photos/${photoId}`); // Redirect กลับไปหน้ารายละเอียดโพสต์เดิม
-      }, 2000);
+      } finally {
+        setLoading(false); // โหลดข้อมูลโพสต์เสร็จสิ้น
+        console.log("Fetch post process finished.");
+      }
+    };
 
 
-    } catch (err) {
-      console.error("Edit post failed:", err);
-      // จัดการ Error จาก Backend
-      const errorMessage = err.response?.data?.message || 'เกิดข้อผิดพลาดในการแก้ไขโพสต์';
-      setError({ message: errorMessage });
+    // Logic ตรวจสอบสิทธิ์และ Redirect ก่อนเริ่มดึงข้อมูล
+    if (!isAuthLoading) { // รอจนกว่า Auth จะโหลดเสร็จ
+        const parsedPhotoId = parseInt(photoId);
 
-    } finally {
-      setIsSubmitting(false); // หยุดสถานะกำลังส่ง Form
-    }
-  };
-  // -----------------------------------------
+        if (isNaN(parsedPhotoId)) {
+            console.log("Invalid photoId in URL (not a number). Redirecting.");
+            navigate('/');
+            return; // หยุด Effect
+        }
 
+        // ตรวจสอบว่า Login แล้วหรือไม่
+        if (!isLoggedIn || !currentUser) {
+            console.log("User not logged in. Redirecting to login.");
+            alert('กรุณาเข้าสู่ระบบเพื่อแก้ไขโพสต์'); // แจ้งเตือนผู้ใช้
+            navigate('/login');
+            return; // หยุด Effect
+        }
 
-  return (
-    <div className="edit-post-page">
-      {/* อาจจะเพิ่ม AppBar ที่นี่ด้วย ถ้ายังไม่ได้ใส่ใน Layout หลัก */}
-      {/* <AppBar /> */}
+        // ถ้าผ่านการตรวจสอบ Login แล้ว ให้เริ่มดึงข้อมูลโพสต์
+        // การตรวจสอบสิทธิ์ความเป็นเจ้าของโพสต์ จะทำหลังจาก fetchPostData ดึงข้อมูลมาได้แล้ว
+        console.log("Auth check passed for EditPost. Fetching post data.");
+        fetchPostData(parsedPhotoId); // เรียก fetch function ด้วย parsed photoId
 
-      <div className="edit-post-container">
-        <h2>แก้ไขโพสต์รูปภาพ</h2>
-        {/* แสดงข้อผิดพลาด */}
-        {error && <div style={{ color: 'red', marginBottom: '15px', textAlign: 'center', fontSize: '14px' }}>{error.message}</div>}
-        {/* แสดงข้อความสำเร็จ */}
-        {success && <div style={{ color: 'green', marginBottom: '15px', textAlign: 'center', fontSize: '14px' }}>แก้ไขโพสต์รูปภาพสำเร็จ! กำลังกลับไปยังหน้ารายละเอียด...</div>}
-
-
-        <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-
-           {/* Input ชื่อสถานที่ */}
-          <div className="form-group"> {/* ใช้ className เดียวกับหน้า Login/Register/AddPost ได้ */}
-            <label htmlFor="locationName">ชื่อสถานที่:</label>
-            <input
-              type="text"
-              id="locationName"
-              value={locationName}
-              onChange={(e) => setLocationName(e.target.value)}
-              required
-              disabled={isSubmitting || loading} // ปิดการใช้งานระหว่างโหลดข้อมูลหรือกำลังส่ง
-            />
-          </div>
-          {/* Input รายละเอียด */}
-          <div className="form-group">
-            <label htmlFor="description">รายละเอียด:</label>
-            <textarea
-              id="description"
-              rows="4"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              disabled={isSubmitting || loading} // ปิดการใช้งานระหว่างโหลดข้อมูลหรือกำลังส่ง
-            ></textarea>
-          </div>
-           {/* แสดงรูปภาพปัจจุบัน และ Input สำหรับเลือกไฟล์รูปใหม่ */}
-           <div className="form-group" style={{ textAlign: 'center' }}>
-             <label>รูปภาพปัจจุบัน:</label>
-             {currentImageUrl && <img src={currentImageUrl} alt="Current Photo" style={{ maxWidth: '200px', height: 'auto', marginTop: '10px', marginBottom: '10px' }} />}
-             <br />
-             <label htmlFor="photoFile">เลือกรูปภาพใหม่ (Optional):</label>
-             <input
-               type="file"
-               id="photoFile"
-               accept="image/*"
-               onChange={handleFileChange}
-               disabled={isSubmitting || loading} // ปิดการใช้งานระหว่างโหลดข้อมูลหรือกำลังส่ง
-             />
-             {/* แสดงชื่อไฟล์ใหม่ที่เลือก (Optional) */}
-             {photoFile && <p style={{ fontSize: '12px', marginTop: '5px' }}>ไฟล์ใหม่ที่เลือก: {photoFile.name}</p>}
-           </div>
+    } // else: if isAuthLoading is true, Effect does nothing until it's false
 
 
-          <button type="submit" disabled={isSubmitting || loading || !locationName}>
-            {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการแก้ไข'}
-          </button>
-        </form>
+  }, [photoId, isLoggedIn, currentUser, isAuthLoading, navigate]); // Dependencies Array
 
-      </div>
-    </div>
-  );
+  // --- แสดง Loading ขณะโหลด Auth หรือ ข้อมูลโพสต์ ---
+  if (isAuthLoading || loading) {
+      return (
+          <div className="full-screen-bg"> {/* ใช้ Style Background ขณะ Loading */}
+             <div className="edit-post-box" style={{ textAlign: 'center' }}> {/* ใช้ Style Box ขณะ Loading */ }
+                <p>{isAuthLoading ? 'กำลังตรวจสอบสิทธิ์...' : 'กำลังโหลดข้อมูลโพสต์...'}</p>
+                {/* อาจเพิ่ม Loading Spinner ตรงนี้ได้ */}
+             </div>
+          </div>
+      );
+  }
+  // ----------------------------------------------------
+
+  // หากมาถึงตรงนี้ แสดงว่าโหลดเสร็จ, Login แล้ว, และเป็นเจ้าของโพสต์
+  // สามารถ Render Form ได้เลย
+  // หาก postData เป็น null แสดงว่าเกิด Error ในการ Fetch แต่ไม่ได้ Redirect (ไม่น่าเกิดขึ้นถ้า Logic ถูกต้อง)
+  if (!postData) {
+      console.log("Post data is null after loading. Showing error message if any.");
+      return (
+          <div className="full-screen-bg">
+             <div className="edit-post-box" style={{ textAlign: 'center' }}>
+                <p>ไม่สามารถโหลดข้อมูลโพสต์ได้</p>
+                {error && <div style={{ color: 'red' }}>{error.message || 'เกิดข้อผิดพลาด'}</div>}
+             </div>
+          </div>
+      );
+  }
+
+
+  // --- ฟังก์ชันจัดการเมื่อเลือกไฟล์รูปภาพใหม่ + Preview ---
+  const handleFileChange = (event) => {
+    if (event.target.files && event.target.files[0]) {
+      const file = event.target.files[0];
+      setPhotoFile(file); // เก็บไฟล์ใหม่
+
+      // อ่านไฟล์เพื่อสร้าง URL สำหรับ Preview รูปใหม่
+      const reader = new FileReader();
+      reader.onloadend = () => {
+         setNewPhotoPreviewUrl(reader.result); // เก็บ Data URL ไว้ใน State ใหม่
+      };
+      reader.readAsDataURL(file);
+
+      console.log("Selected new file:", file);
+    } else {
+      setPhotoFile(null);
+      setNewPhotoPreviewUrl(null); // ล้าง Preview URL
+      console.log("No new file selected.");
+    }
+  };
+  // ---------------------------------------------------------
+
+
+  // --- ฟังก์ชันจัดการเมื่อ Form ถูก Submit ---
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    setError(null);
+    setSuccess(false);
+    setIsSubmitting(true);
+
+    try {
+      const formData = new FormData();
+      let isDataChanged = false;
+
+      // เปรียบเทียบค่าใน Form กับข้อมูลเก่าที่โหลดมา (postData)
+      // แล้วค่อย append เฉพาะ Field ที่มีการเปลี่ยนแปลง
+      if (locationName !== (postData?.location_name || '')) {
+         formData.append('location_name', locationName);
+         isDataChanged = true;
+      }
+      if (description !== (postData?.description || '')) {
+         formData.append('description', description);
+         isDataChanged = true;
+      }
+      // ถ้าผู้ใช้เลือกรูปภาพใหม่
+      if (photoFile) {
+        formData.append('photoImage', photoFile); // ชื่อ field ต้องตรงกับ Backend
+        isDataChanged = true;
+      }
+
+      // ถ้าไม่มีการเปลี่ยนแปลงข้อมูลอะไรเลย
+      if (!isDataChanged) {
+           console.log("No data changed, skipping API call.");
+           setSuccess(true); // ถือว่าสำเร็จ
+           setIsSubmitting(false);
+            // อาจจะหน่วงเวลาแล้ว Redirect เลย
+            setTimeout(() => {
+               navigate('/'); // Redirect กลับหน้าหลัก
+            }, 1000);
+           return;
+      }
+
+
+      // **สำคัญ:** Backend PUT /api/photos/:photoId ต้องมีการตรวจสอบสิทธิ์ความเป็นเจ้าของ!
+      // และ Backend ต้องจัดการลบรูปเก่าใน Cloudinary และอัปโหลดรูปใหม่ (ถ้ามี)
+      const response = await axios.put(`${BASE_BACKEND_URL}/api/photos/${photoId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data', // ใช้เสมอเมื่อมีโอกาสส่งไฟล์
+        },
+      });
+
+      // ถ้าแก้ไขสำเร็จ (Status 200 OK)
+      // Backend API Edit Photo คืนค่า { message: ..., data: updatedPhoto }
+      // const updatedPostData = response.data.data; // ถ้าต้องการนำข้อมูลที่อัปเดตมาใช้ต่อใน Frontend
+
+      setSuccess(true);
+      // alert('แก้ไขโพสต์สำเร็จ!'); // อาจจะลบ Alert ออก
+      setTimeout(() => {
+         navigate('/'); // Redirect ไปหน้าหลักหลังจากสำเร็จ
+      }, 2000);
+
+
+    } catch (err) {
+      setError(err);
+      console.error("Edit post failed:", err);
+      // จัดการ Error จาก Backend
+      const errorMessage = err.response?.data?.message || 'เกิดข้อผิดพลาดในการแก้ไขโพสต์';
+      alert(`Failed to edit post: ${errorMessage}`);
+      // อาจจะพิจารณา Redirect ในกรณี Error บางประเภท เช่น 401, 403, 404
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+
+  return (
+    <>
+      {/* --- Div หลักที่มี Style Background เต็มจอ --- */}
+      <div className="full-screen-bg">
+
+            {/* ชื่อแอป/รูปภาพประกอบ ด้านนอกกล่อง ถ้าต้องการ */ }
+
+        {/* --- กล่องสำหรับ Form แก้ไขโพสต์ (ใช้ Class edit-post-box) --- */}
+        <div className="edit-post-box">
+
+            {/* ปุ่มย้อนกลับ (ถ้าต้องการ) */ }
+            <button onClick={() => navigate(-1)} className="back-button top-left-button">
+                ย้อนกลับ
+            </button>
+
+          {/* หัวข้อหน้าแก้ไขโพสต์ */}
+          <h2 className="edit-post-title">แก้ไขโพสต์รูปภาพ</h2>
+
+          {/* แสดงข้อผิดพลาด */}
+          {error && <div style={{ color: 'red', marginBottom: '15px', textAlign: 'center', fontSize: '14px' }}>{error.message}</div>}
+          {/* แสดงข้อความสำเร็จ */}
+          {success && <div style={{ color: 'green', marginBottom: '15px', textAlign: 'center', fontSize: '14px' }}>แก้ไขโพสต์สำเร็จ! กำลังกลับหน้าหลัก...</div>}
+
+
+          {/* --- Form สำหรับ แก้ไขโพสต์ --- */}
+          <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+
+             {/* Input ชื่อสถานที่ */}
+            <input
+              type="text"
+              placeholder="ชื่อสถานที่"
+              id="locationName"
+              className="input-field"
+              value={locationName}
+              onChange={(e) => setLocationName(e.target.value)}
+              required
+              disabled={isSubmitting || loading} // ปิดระหว่าง Submitting หรือ Loading ข้อมูลเก่า
+            />
+            {/* Input รายละเอียด (ใช้ textarea) */}
+            <textarea
+              placeholder="รายละเอียด (Optional)"
+              id="description"
+              rows="4"
+              className="input-field"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              disabled={isSubmitting || loading}
+            ></textarea>
+
+            {/* --- แสดงรูปภาพเก่า + Input สำหรับเลือกรูปใหม่ + Preview รูปใหม่ --- */}
+            <div className="post-photo-group"> {/* Grouping div for styling */}
+                <label style={{ marginBottom: '10px' }}>รูปภาพปัจจุบัน:</label>
+                {postData?.photo_url && ( // แสดงรูปเก่า ถ้ามี และข้อมูลโหลดแล้ว
+                    <img
+                        src={postData.photo_url}
+                        alt="Current Post Photo"
+                        className="current-post-photo" // ใช้ Class สำหรับ Style รูปปัจจุบัน
+                    />
+                )}
+                <br /> {/* เว้นบรรทัด */ }
+
+                 {/* Input File สำหรับเลือกรูปใหม่ */}
+                <label htmlFor="newPhotoFile" className="custom-file-upload-button"> {/* ใช้ Label เป็นปุ่ม */ }
+                    เลือกรูปภาพใหม่ (Optional)
+                </label>
+                <input
+                    type="file"
+                    id="newPhotoFile" // id ต้องตรงกับ htmlFor ของ Label
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    disabled={isSubmitting || loading}
+                    style={{ display: 'none' }} // ซ่อน Input File ตัวจริง
+                />
+                {/* แสดงชื่อไฟล์ใหม่ที่เลือก (Optional) */ }
+                {photoFile && <p className="selected-file-name">ไฟล์ใหม่ที่เลือก: {photoFile.name}</p>}
+
+                {/* --- แสดง Preview รูปภาพใหม่ที่เลือก --- */}
+                {newPhotoPreviewUrl && (
+                    <img
+                        src={newPhotoPreviewUrl}
+                        alt="New Post Photo Preview"
+                        className="image-preview" // ใช้ Class สำหรับ Style รูป Preview
+                         style={{ marginTop: '15px', borderRadius: '8px' }} // ปรับ margin และขอบ
+                    />
+                )}
+                {/* ------------------------------------------------- */}
+
+            </div> {/* End post-photo-group */}
+
+
+          {/* ปุ่ม บันทึกโพสต์ */}
+          <button
+             type="submit"
+             disabled={isSubmitting || loading || !locationName} // ปุ่ม Disabled ถ้ากำลังโหลด/บันทึก หรือชื่อสถานที่เป็นค่าว่าง
+             className="save-post-button" // ใช้ Class save-post-button
+            >
+              {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกโพสต์'}
+          </button>
+        </form>
+
+        </div> {/* สิ้นสุด .edit-post-box */}
+      </div> {/* สิ้นสุด .full-screen-bg */}
+    </>
+  );
 }
 
 export default EditPost;

@@ -1,0 +1,165 @@
+/* src/css/EditPost.css */
+
+/* ส่วน Style Global ที่ควรย้ายไป Global.css หรือ App.css */
+/*
+html, body {
+margin: 0;
+padding: 0;
+height: 100%;
+overflow-x: hidden;
+}
+a {
+font-family: 'Charmonman', cursive;
+}
+*/
+
+/* พื้นหลังเต็มจอ (ใช้ Style เดียวกับหน้าอื่น) */
+.full-screen-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+        background:
+            linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+            url('../assets/bg.jpg') no-repeat center center;
+    background-size: cover;
+    display: flex;
+    align-items: center; /* จัดกลางแนวตั้ง */
+    justify-content: center; /* จัดกลางแนวนอน */
+    padding: 0 5vw;
+        overflow-y: auto; /* เพิ่มเพื่อให้ Scroll ได้ถ้าเนื้อหาในกล่องยาวเกินหน้าจอ */
+    }
+    
+    /* กล่องสำหรับ Form แก้ไขโพสต์ */
+    .edit-post-box { /* ใช้ชื่อ Class เฉพาะสำหรับหน้านี้ */
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(12px);
+        border-radius: 20px;
+        padding: 40px;
+        width: 600px; /* ปรับความกว้าง */
+        max-width: 90%;
+        height: auto; /* ให้ความสูงปรับตามเนื้อหา */
+        margin-top: 20px; /* อาจมี margin บน/ล่าง ถ้าจำเป็น */
+        margin-bottom: 20px;
+    
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: #fff; /* สีตัวอักษร */
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* Style สำหรับหัวข้อในกล่อง */
+    .edit-post-title { /* ใช้ชื่อ Class เฉพาะสำหรับหน้านี้ */
+        font-family: 'Charmonman', cursive;
+        font-size: 36px;
+        margin-bottom: 20px;
+        color: #fff;
+        text-align: center;
+    }
+    
+    
+    /* Style สำหรับ Input Element (ใช้ Class input-field เดียวกัน) */
+    .input-field {
+        width: 100%;
+        /* height: 60px; */ /* ความสูงปรับตามเนื้อหา */
+        margin: 10px 0;
+        padding: 14px;
+        border: none;
+        border-radius: 10px;
+        background: rgba(105, 71, 71, 0.2);
+        color: #fff;
+        font-size: 16px;
+        box-sizing: border-box;
+        resize: vertical; /* อนุญาตให้ปรับขนาด textarea */
+    }
+    
+    .input-field::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    /* Style สำหรับกลุ่ม Input File และรูปภาพโพสต์ */
+    .post-photo-group { /* ใช้ Class เพื่อจัด Group */
+        width: 100%;
+        margin: 15px 0;
+        text-align: center; /* จัดกลางเนื้อหาใน Group */
+    }
+    
+    /* Style สำหรับรูปภาพโพสต์ปัจจุบัน */
+    .current-post-photo {
+        display: block; /* ทำให้รูปภาพขึ้นบรรทัดใหม่ */
+        max-width: 80%; /* ขนาดรูปภาพโพสต์ปัจจุบัน */
+        height: auto;
+        margin: 10px auto 15px auto; /* จัดกลางรูปและมี margin รอบๆ */
+        border-radius: 8px;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+        object-fit: cover; /* ครอบคลุมพื้นที่โดยไม่ผิดสัดส่วน */
+    }
+    
+    /* Style สำหรับ Label ของ Input File (ถ้าต้องการ Custom Style เป็นปุ่ม) */
+    /* ซ่อน Input File จริง แล้วใช้ Label สไตล์นี้แทน */
+    .custom-file-upload-button {
+        display: inline-block;
+        background-color: rgba(105, 71, 71, 0.4);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        font-size: 14px;
+        margin-top: 10px; /* ระยะห่างจากรูปหรือข้อความด้านบน */
+    }
+    
+    .custom-file-upload-button:hover {
+        background-color: rgba(105, 71, 71, 0.6);
+    }
+    
+    /* Style สำหรับ Input File ตัวจริง (ซ่อนไว้) */
+    .post-photo-group input[type="file"] {
+         display: none;
+    }
+    
+    /* Style สำหรับชื่อไฟล์ใหม่ที่เลือก */
+    .selected-file-name {
+        font-size: 12px;
+        margin-top: 5px;
+        color: rgba(255, 255, 255, 0.8);
+    }
+    
+    
+    /* Style สำหรับรูปภาพ Preview ของรูปใหม่ที่เลือก */
+    .image-preview {
+        display: block;
+        max-width: 100%;
+        height: auto;
+        margin-top: 15px; /* ระยะห่างด้านบน */
+        border-radius: 8px;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    
+    /* Style สำหรับปุ่ม Submit */
+    .save-post-button { /* ใช้ชื่อ Class เฉพาะสำหรับหน้านี้ */
+        margin-top: 20px;
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(45deg, hsla(0, 100%, 56%, 0.557), #e2b75a83, #8163d383);
+        border: none;
+        border-radius: 12px;
+        color: #fff;
+        font-size: 20px !important;
+        cursor: pointer;
+        font-family: 'Charmonman', cursive;
+        transition: opacity 0.3s ease;
+    }
+    
+    .save-post-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .save-post-button:hover:not(:disabled) {
+        opacity: 0.9;
+    }
